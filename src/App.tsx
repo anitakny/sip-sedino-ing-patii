@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { MediaContributionSection } from './components/MediaContributionSection';
@@ -12,6 +12,15 @@ import { Footer } from './components/Footer';
 import { PageSkeleton, MapSkeleton } from './components/LoadingSkeleton';
 import { GooglePlaceImage } from './components/GooglePlaceImage';
 import type { QuickSearchResult } from './components/QuickSearchBar';
+import {
+  createFirestoreReview,
+  deleteFirestoreReview,
+  formatQuotaErrorMessage,
+  generateAuthorToken,
+  incrementFirestoreReviewHelpful,
+  subscribeToReviews,
+  updateFirestoreReview,
+} from './services/reviewsService';
 
 const GalleryModal = lazy(() => import('./components/GalleryModal').then((m) => ({ default: m.GalleryModal })));
 const InteractiveMap = lazy(() => import('./components/InteractiveMap').then((m) => ({ default: m.InteractiveMap })));
@@ -94,6 +103,10 @@ export default function App() {
 
   const LEGACY_AI_REVIEW_IDS = new Set(['rev-1', 'rev-2', 'rev-3', 'rev-4']);
 
+  const [reviewsSyncError, setReviewsSyncError] = useState<string | null>(null);
+  const [reviewsLoading, setReviewsLoading] = useState<boolean>(true);
+  const migratedLocalRef = useRef(false);
+
   // Per-browser secret tokens proving authorship for comments created in this browser
   const [reviewTokens, setReviewTokens] = useState<Record<string, string>>(() => {
     try {
@@ -104,7 +117,7 @@ export default function App() {
     }
   });
 
-  // Reviews items (only real user-submitted comments)
+  // Reviews items synchronized live via Cloud Firestore
   const [reviewsList, setReviewsList] = useState<ReviewItem[]>(() => {
     try {
       const saved = localStorage.getItem('sip_pati_reviews');
@@ -119,28 +132,58 @@ export default function App() {
   });
 
   useEffect(() => {
-    let active = true;
-    fetch('/api/reviews')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((payload: { reviews?: ReviewItem[] } | null) => {
-        if (!active || !payload?.reviews) return;
-        setReviewsList((prev) => {
-          const map = new Map<string, ReviewItem>();
-          payload.reviews!.forEach((r) => map.set(r.id, r));
-          prev.forEach((r) => {
-            if (!map.has(r.id)) map.set(r.id, r);
-          });
-          const merged = Array.from(map.values());
+    const unsubscribe = subscribeToReviews(
+      (cloudReviews) => {
+        setReviewsLoading(false);
+        setReviewsSyncError(null);
+
+        // One-time migration for any user-created comment previously saved only in localStorage
+        if (!migratedLocalRef.current) {
+          migratedLocalRef.current = true;
           try {
-            localStorage.setItem('sip_pati_reviews', JSON.stringify(merged));
+            const alreadyMigrated = localStorage.getItem('sip_pati_reviews_firestore_migrated');
+            if (!alreadyMigrated) {
+              localStorage.setItem('sip_pati_reviews_firestore_migrated', '1');
+              const cloudIds = new Set(cloudReviews.map((r) => r.id));
+              const localRaw = localStorage.getItem('sip_pati_reviews');
+              const localReviews: ReviewItem[] = localRaw ? JSON.parse(localRaw) : [];
+              const savedTokensRaw = localStorage.getItem('sip_pati_review_tokens');
+              const savedTokens: Record<string, string> = savedTokensRaw
+                ? JSON.parse(savedTokensRaw)
+                : {};
+
+              const toMigrate = localReviews.filter(
+                (r) => !LEGACY_AI_REVIEW_IDS.has(r.id) && !cloudIds.has(r.id) && r.komentar?.trim().length >= 5
+              );
+
+              if (toMigrate.length > 0) {
+                const updatedTokens = { ...savedTokens };
+                toMigrate.forEach((rev) => {
+                  const token = updatedTokens[rev.id] || generateAuthorToken();
+                  updatedTokens[rev.id] = token;
+                  void createFirestoreReview(rev, token).catch(() => {});
+                });
+                setReviewTokens(updatedTokens);
+                try {
+                  localStorage.setItem('sip_pati_review_tokens', JSON.stringify(updatedTokens));
+                } catch {}
+              }
+            }
           } catch {}
-          return merged;
-        });
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-    };
+        }
+
+        setReviewsList(cloudReviews);
+        try {
+          localStorage.setItem('sip_pati_reviews', JSON.stringify(cloudReviews));
+        } catch {}
+      },
+      (errMessage) => {
+        setReviewsLoading(false);
+        setReviewsSyncError(errMessage);
+      }
+    );
+
+    return () => unsubscribe();
   }, []);
 
   // Add media handler
@@ -152,12 +195,10 @@ export default function App() {
     } catch {}
   };
 
-  // Add review handler (generates an author-only editToken stored locally in this browser)
-  const handleAddReview = (newReview: ReviewItem) => {
-    const editToken =
-      typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+  // Add review handler (stores cryptographic proof hash in Firestore, raw token only in author's browser)
+  const handleAddReview = async (newReview: ReviewItem) => {
+    setReviewsSyncError(null);
+    const editToken = generateAuthorToken();
 
     const updatedTokens = { ...reviewTokens, [newReview.id]: editToken };
     setReviewTokens(updatedTokens);
@@ -165,47 +206,19 @@ export default function App() {
       localStorage.setItem('sip_pati_review_tokens', JSON.stringify(updatedTokens));
     } catch {}
 
-    const updated = [newReview, ...reviewsList];
-    setReviewsList(updated);
-    try {
-      localStorage.setItem('sip_pati_reviews', JSON.stringify(updated));
-    } catch {}
+    setReviewsList((prev) => [newReview, ...prev.filter((r) => r.id !== newReview.id)]);
 
-    fetch('/api/reviews', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...newReview, editToken }),
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((payload: { review?: ReviewItem; editToken?: string } | null) => {
-        if (!payload?.review) return;
-        if (payload.review.id !== newReview.id || payload.editToken) {
-          const savedId = payload.review.id;
-          const savedToken = payload.editToken || editToken;
-          setReviewTokens((curr) => {
-            const next = { ...curr, [savedId]: savedToken };
-            try {
-              localStorage.setItem('sip_pati_review_tokens', JSON.stringify(next));
-            } catch {}
-            return next;
-          });
-          if (savedId !== newReview.id) {
-            setReviewsList((curr) => {
-              const next = curr.map((r) => (r.id === newReview.id ? payload.review! : r));
-              try {
-                localStorage.setItem('sip_pati_reviews', JSON.stringify(next));
-              } catch {}
-              return next;
-            });
-          }
-        }
-      })
-      .catch(() => {});
+    try {
+      await createFirestoreReview(newReview, editToken);
+    } catch (error) {
+      setReviewsSyncError(formatQuotaErrorMessage(error));
+    }
   };
 
-  const handleEditReview = (id: string, updates: ReviewUpdatePayload) => {
+  const handleEditReview = async (id: string, updates: ReviewUpdatePayload) => {
     const token = reviewTokens[id];
     if (!token) return;
+    setReviewsSyncError(null);
 
     const editedAt = new Intl.DateTimeFormat('id-ID', {
       day: 'numeric',
@@ -213,40 +226,32 @@ export default function App() {
       year: 'numeric',
     }).format(new Date());
 
-    const updated = reviewsList.map((r) =>
-      r.id === id
-        ? {
-            ...r,
-            ...updates,
-            rekomendasi: updates.rating >= 4,
-            editedAt,
-          }
-        : r
+    setReviewsList((prev) =>
+      prev.map((r) =>
+        r.id === id
+          ? {
+              ...r,
+              ...updates,
+              rekomendasi: updates.rating >= 4,
+              editedAt,
+            }
+          : r
+      )
     );
-    setReviewsList(updated);
-    try {
-      localStorage.setItem('sip_pati_reviews', JSON.stringify(updated));
-    } catch {}
 
-    fetch(`/api/reviews/${encodeURIComponent(id)}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-review-token': token,
-      },
-      body: JSON.stringify({ ...updates, editToken: token }),
-    }).catch(() => {});
+    try {
+      await updateFirestoreReview(id, { ...updates, editedAt }, token);
+    } catch (error) {
+      setReviewsSyncError(formatQuotaErrorMessage(error));
+    }
   };
 
-  const handleDeleteReview = (id: string) => {
+  const handleDeleteReview = async (id: string) => {
     const token = reviewTokens[id];
     if (!token) return;
+    setReviewsSyncError(null);
 
-    const updated = reviewsList.filter((r) => r.id !== id);
-    setReviewsList(updated);
-    try {
-      localStorage.setItem('sip_pati_reviews', JSON.stringify(updated));
-    } catch {}
+    setReviewsList((prev) => prev.filter((r) => r.id !== id));
 
     const { [id]: _removed, ...remainingTokens } = reviewTokens;
     setReviewTokens(remainingTokens);
@@ -254,21 +259,28 @@ export default function App() {
       localStorage.setItem('sip_pati_review_tokens', JSON.stringify(remainingTokens));
     } catch {}
 
-    fetch(`/api/reviews/${encodeURIComponent(id)}`, {
-      method: 'DELETE',
-      headers: { 'x-review-token': token },
-    }).catch(() => {});
+    try {
+      await deleteFirestoreReview(id, token);
+    } catch (error) {
+      setReviewsSyncError(formatQuotaErrorMessage(error));
+    }
   };
 
-  const handleHelpfulReview = (id: string) => {
-    const updated = reviewsList.map((r) =>
-      r.id === id ? { ...r, helpfulCount: (r.helpfulCount ?? 0) + 1 } : r
+  const handleHelpfulReview = async (id: string) => {
+    const target = reviewsList.find((r) => r.id === id);
+    const currentCount = target?.helpfulCount ?? 0;
+
+    setReviewsList((prev) =>
+      prev.map((r) =>
+        r.id === id ? { ...r, helpfulCount: currentCount + 1 } : r
+      )
     );
-    setReviewsList(updated);
+
     try {
-      localStorage.setItem('sip_pati_reviews', JSON.stringify(updated));
-    } catch {}
-    fetch(`/api/reviews/${encodeURIComponent(id)}/helpful`, { method: 'POST' }).catch(() => {});
+      await incrementFirestoreReviewHelpful(id, currentCount);
+    } catch (error) {
+      setReviewsSyncError(formatQuotaErrorMessage(error));
+    }
   };
 
   const handleNavigate = (page: string) => {
@@ -735,6 +747,8 @@ export default function App() {
             <ReviewsSection
               reviews={reviewsList}
               ownedReviewIds={Object.keys(reviewTokens)}
+              isLoading={reviewsLoading}
+              syncError={reviewsSyncError}
               onAddReview={handleAddReview}
               onEditReview={handleEditReview}
               onDeleteReview={handleDeleteReview}

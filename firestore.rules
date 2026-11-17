@@ -1,0 +1,125 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidReview(data) {
+      return data.keys().hasAll([
+          'nama',
+          'asal',
+          'destinasi',
+          'rating',
+          'tanggal',
+          'komentar',
+          'rekomendasi',
+          'helpfulCount',
+          'editTokenHash',
+          'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'nama',
+          'asal',
+          'destinasi',
+          'rating',
+          'tanggal',
+          'komentar',
+          'rekomendasi',
+          'helpfulCount',
+          'editTokenHash',
+          'createdAt',
+          'editedAt',
+          'updatedAt'
+        ])
+        && data.nama is string && data.nama.size() >= 1 && data.nama.size() <= 80
+        && data.asal is string && data.asal.size() >= 1 && data.asal.size() <= 80
+        && data.destinasi is string && data.destinasi.size() >= 1 && data.destinasi.size() <= 120
+        && data.rating is int && data.rating >= 1 && data.rating <= 5
+        && data.tanggal is string && data.tanggal.size() >= 1 && data.tanggal.size() <= 40
+        && data.komentar is string && data.komentar.size() >= 5 && data.komentar.size() <= 1000
+        && data.rekomendasi is bool
+        && data.helpfulCount is int && data.helpfulCount >= 0
+        && data.editTokenHash is string && data.editTokenHash.size() == 64 && data.editTokenHash.matches('^[a-f0-9]{64}$')
+        && data.createdAt is timestamp
+        && (!('editedAt' in data) || (data.editedAt is string && data.editedAt.size() >= 1 && data.editedAt.size() <= 40))
+        && (!('updatedAt' in data) || data.updatedAt is timestamp);
+    }
+
+    function isValidReviewProof(data) {
+      return data.keys().hasAll(['token', 'updatedAt'])
+        && data.keys().hasOnly(['token', 'updatedAt'])
+        && data.token is string && data.token.size() >= 16 && data.token.size() <= 128
+        && data.updatedAt == request.time;
+    }
+
+    function hasMatchingProof(reviewId, expectedHash) {
+      let proofDoc = getAfter(/databases/$(database)/documents/reviewProofs/$(reviewId));
+      return proofDoc != null
+        && proofDoc.data.token is string
+        && proofDoc.data.token.size() >= 16
+        && proofDoc.data.token.size() <= 128
+        && proofDoc.data.updatedAt == request.time
+        && hashing.sha256(proofDoc.data.token.toUtf8()).toHexString().lower() == expectedHash;
+    }
+
+    match /reviewProofs/{reviewId} {
+      // Write-only collection for atomic ownership proofs; never readable by any client
+      allow read: if false;
+      allow create, update: if isValidId(reviewId) && isValidReviewProof(incoming());
+      allow delete: if false;
+    }
+
+    match /reviews/{reviewId} {
+      // Public visitor reviews readable across all devices (bounded list queries up to 100)
+      allow get: if isValidId(reviewId);
+      allow list: if request.query.limit != null && request.query.limit <= 100;
+
+      // Anyone can submit a new review with initial helpfulCount == 0 and valid server timestamp
+      allow create: if isValidId(reviewId)
+        && isValidReview(incoming())
+        && incoming().helpfulCount == 0
+        && incoming().createdAt == request.time
+        && !('editedAt' in incoming())
+        && !('updatedAt' in incoming());
+
+      // Two controlled update actions:
+      // 1) Any visitor incrementing helpfulCount by +1
+      // 2) Original author editing content with atomic cryptographic proof in /reviewProofs/{reviewId}
+      allow update: if isValidId(reviewId)
+        && isValidReview(incoming())
+        && incoming().createdAt == existing().createdAt
+        && incoming().editTokenHash == existing().editTokenHash
+        && (
+          (
+            incoming().diff(existing()).affectedKeys().hasOnly(['helpfulCount'])
+            && incoming().helpfulCount == existing().helpfulCount + 1
+          )
+          || (
+            incoming().diff(existing()).affectedKeys().hasOnly(['nama', 'asal', 'destinasi', 'rating', 'komentar', 'rekomendasi', 'editedAt', 'updatedAt'])
+            && incoming().helpfulCount == existing().helpfulCount
+            && incoming().updatedAt == request.time
+            && 'editedAt' in incoming()
+            && hasMatchingProof(reviewId, existing().editTokenHash)
+          )
+        );
+
+      // Only the original author with matching atomic proof can delete their review
+      allow delete: if isValidId(reviewId)
+        && hasMatchingProof(reviewId, existing().editTokenHash);
+    }
+  }
+}

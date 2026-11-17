@@ -1,0 +1,117 @@
+{
+  "entities": {
+    "Review": {
+      "title": "Review",
+      "description": "Komentar dan ulasan pengunjung untuk destinasi wisata di Kabupaten Pati.",
+      "type": "object",
+      "properties": {
+        "nama": {
+          "type": "string",
+          "description": "Nama penulis komentar.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "asal": {
+          "type": "string",
+          "description": "Kota atau daerah asal pengunjung.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "destinasi": {
+          "type": "string",
+          "description": "Nama destinasi wisata Pati yang diulas.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "rating": {
+          "type": "integer",
+          "description": "Nilai bintang kunjungan dari 1 sampai 5."
+        },
+        "tanggal": {
+          "type": "string",
+          "description": "Tanggal tampilan komentar.",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "komentar": {
+          "type": "string",
+          "description": "Isi komentar atau ulasan asli pengunjung.",
+          "minLength": 5,
+          "maxLength": 1000
+        },
+        "rekomendasi": {
+          "type": "boolean",
+          "description": "Apakah pengunjung merekomendasikan destinasi (rating >= 4)."
+        },
+        "helpfulCount": {
+          "type": "integer",
+          "description": "Jumlah tanda membantu dari pengunjung lain."
+        },
+        "editTokenHash": {
+          "type": "string",
+          "description": "Hash SHA-256 (64 karakter hex) dari token kepemilikan penulis.",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp server saat komentar dibuat."
+        },
+        "editedAt": {
+          "type": "string",
+          "description": "Tanggal tampilan saat komentar terakhir diedit.",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp server saat komentar diperbarui."
+        }
+      },
+      "required": [
+        "nama",
+        "asal",
+        "destinasi",
+        "rating",
+        "tanggal",
+        "komentar",
+        "rekomendasi",
+        "helpfulCount",
+        "editTokenHash",
+        "createdAt"
+      ]
+    },
+    "ReviewProof": {
+      "title": "ReviewProof",
+      "description": "Dokumen tulis-saja berisi token pembuktian penulis untuk verifikasi atomik edit atau hapus komentar.",
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "description": "Token rahasia penulis (minimal 16 karakter) yang hash SHA-256-nya dicocokkan dengan editTokenHash.",
+          "minLength": 16,
+          "maxLength": 128
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp server saat aksi pembuktian dikirim."
+        }
+      },
+      "required": ["token", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/reviews/{reviewId}": {
+      "schema": { "$ref": "#/entities/Review" },
+      "description": "Koleksi publik komentar dan ulasan pengunjung yang dapat dibaca bersama di semua perangkat."
+    },
+    "/reviewProofs/{reviewId}": {
+      "schema": { "$ref": "#/entities/ReviewProof" },
+      "description": "Koleksi tulis-saja untuk verifikasi kepemilikan saat mengedit atau menghapus komentar."
+    }
+  }
+}

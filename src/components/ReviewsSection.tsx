@@ -26,6 +26,8 @@ export interface ReviewUpdatePayload {
 interface ReviewsSectionProps {
   reviews: ReviewItem[];
   ownedReviewIds?: string[];
+  isLoading?: boolean;
+  syncError?: string | null;
   onAddReview: (review: ReviewItem) => void;
   onEditReview?: (id: string, updates: ReviewUpdatePayload) => void;
   onDeleteReview?: (id: string) => void;
@@ -49,6 +51,8 @@ function getInitials(name: string): string {
 export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
   reviews,
   ownedReviewIds = [],
+  isLoading = false,
+  syncError = null,
   onAddReview,
   onEditReview,
   onDeleteReview,
@@ -391,8 +395,35 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
               )}
             </div>
 
-            {/* Comments List or Honest Empty State */}
-            {reviews.length === 0 ? (
+            {syncError && (
+              <div
+                role="alert"
+                className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs font-medium"
+              >
+                {syncError}
+              </div>
+            )}
+
+            {/* Comments List or Loading / Empty State */}
+            {isLoading && reviews.length === 0 ? (
+              <div className="space-y-4">
+                {[1, 2].map((n) => (
+                  <div
+                    key={n}
+                    className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 p-6 animate-pulse space-y-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700" />
+                      <div className="space-y-1.5 flex-1">
+                        <div className="h-3.5 w-32 bg-slate-200 dark:bg-slate-700 rounded" />
+                        <div className="h-3 w-20 bg-slate-200 dark:bg-slate-700 rounded" />
+                      </div>
+                    </div>
+                    <div className="h-4 w-3/4 bg-slate-200 dark:bg-slate-700 rounded" />
+                  </div>
+                ))}
+              </div>
+            ) : reviews.length === 0 ? (
               <div className="rounded-3xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/30 p-8 sm:p-10 text-center space-y-2.5">
                 <div className="w-12 h-12 mx-auto rounded-2xl bg-[#0c2b64]/10 dark:bg-[#1a56a4]/30 text-[#0c2b64] dark:text-[#38bdf8] flex items-center justify-center">
                   <MessageSquare className="w-6 h-6" />
