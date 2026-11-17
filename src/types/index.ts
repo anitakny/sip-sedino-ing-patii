@@ -97,9 +97,10 @@ export interface ReviewItem {
   rating: number;
   tanggal: string;
   komentar: string;
-  avatarUrl: string;
+  avatarUrl?: string;
   rekomendasi: boolean;
   googleMapsReviewUrl?: string;
+  helpfulCount?: number;
 }
 
 export interface ContactMessage {

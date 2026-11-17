@@ -92,24 +92,46 @@ export default function App() {
   // Lightbox modal item
   const [activeLightboxItem, setActiveLightboxItem] = useState<MediaItem | null>(null);
 
-  // Reviews items
+  const LEGACY_AI_REVIEW_IDS = new Set(['rev-1', 'rev-2', 'rev-3', 'rev-4']);
+
+  // Reviews items (only real user-submitted comments)
   const [reviewsList, setReviewsList] = useState<ReviewItem[]>(() => {
     try {
       const saved = localStorage.getItem('sip_pati_reviews');
       if (saved) {
         const parsed: ReviewItem[] = JSON.parse(saved);
-        const seloromoRev = INITIAL_REVIEWS.find((r) => r.id === 'rev-1');
-        return parsed.map((rev) =>
-          rev.id === 'rev-1' && seloromoRev?.googleMapsReviewUrl && !rev.googleMapsReviewUrl
-            ? { ...rev, googleMapsReviewUrl: seloromoRev.googleMapsReviewUrl }
-            : rev
-        );
+        return parsed.filter((rev) => !LEGACY_AI_REVIEW_IDS.has(rev.id));
       }
       return INITIAL_REVIEWS;
     } catch {
       return INITIAL_REVIEWS;
     }
   });
+
+  useEffect(() => {
+    let active = true;
+    fetch('/api/reviews')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((payload: { reviews?: ReviewItem[] } | null) => {
+        if (!active || !payload?.reviews) return;
+        setReviewsList((prev) => {
+          const map = new Map<string, ReviewItem>();
+          payload.reviews!.forEach((r) => map.set(r.id, r));
+          prev.forEach((r) => {
+            if (!map.has(r.id)) map.set(r.id, r);
+          });
+          const merged = Array.from(map.values());
+          try {
+            localStorage.setItem('sip_pati_reviews', JSON.stringify(merged));
+          } catch {}
+          return merged;
+        });
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Add media handler
   const handleAddMedia = (newMedia: MediaItem) => {
@@ -127,6 +149,31 @@ export default function App() {
     try {
       localStorage.setItem('sip_pati_reviews', JSON.stringify(updated));
     } catch {}
+    fetch('/api/reviews', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newReview),
+    }).catch(() => {});
+  };
+
+  const handleDeleteReview = (id: string) => {
+    const updated = reviewsList.filter((r) => r.id !== id);
+    setReviewsList(updated);
+    try {
+      localStorage.setItem('sip_pati_reviews', JSON.stringify(updated));
+    } catch {}
+    fetch(`/api/reviews/${encodeURIComponent(id)}`, { method: 'DELETE' }).catch(() => {});
+  };
+
+  const handleHelpfulReview = (id: string) => {
+    const updated = reviewsList.map((r) =>
+      r.id === id ? { ...r, helpfulCount: (r.helpfulCount ?? 0) + 1 } : r
+    );
+    setReviewsList(updated);
+    try {
+      localStorage.setItem('sip_pati_reviews', JSON.stringify(updated));
+    } catch {}
+    fetch(`/api/reviews/${encodeURIComponent(id)}/helpful`, { method: 'POST' }).catch(() => {});
   };
 
   const handleNavigate = (page: string) => {
@@ -589,10 +636,12 @@ export default function App() {
 
 
 
-            {/* 8. User Reviews & Credibility Section */}
+            {/* 8. User Reviews & Comments Section */}
             <ReviewsSection
               reviews={reviewsList}
               onAddReview={handleAddReview}
+              onDeleteReview={handleDeleteReview}
+              onHelpfulReview={handleHelpfulReview}
             />
 
             {/* 9. Kontak & Layanan Cepat (Call to Action) */}

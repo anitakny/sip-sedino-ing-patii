@@ -2,416 +2,447 @@ import React, { useState } from 'react';
 import {
   Star,
   MessageSquare,
-  PlusCircle,
   ThumbsUp,
   CheckCircle2,
-  X,
-  UserCheck,
-  Sparkles,
   MapPin,
+  Send,
+  Trash2,
   ExternalLink
 } from 'lucide-react';
 import { ReviewItem } from '../types';
+import { DESTINATIONS_DATA } from '../data/destinationsData';
 import confetti from 'canvas-confetti';
 
 interface ReviewsSectionProps {
   reviews: ReviewItem[];
   onAddReview: (review: ReviewItem) => void;
+  onDeleteReview?: (id: string) => void;
+  onHelpfulReview?: (id: string) => void;
+}
+
+const DESTINATION_OPTIONS = [
+  ...DESTINATIONS_DATA.slice(0, 15).map((d) => d.nama),
+  'Wisata Kuliner Pati',
+  'Sentra Batik Tulis Bakaran',
+  'Lainnya / Wisata Pati'
+];
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'P';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
 export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
   reviews,
-  onAddReview
+  onAddReview,
+  onDeleteReview,
+  onHelpfulReview
 }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [helpfulMap, setHelpfulMap] = useState<Record<string, number>>({});
+  const [helpfulClickedMap, setHelpfulClickedMap] = useState<Record<string, boolean>>({});
+  const [localHelpfulDelta, setLocalHelpfulDelta] = useState<Record<string, number>>({});
 
-  // Form states
+  // Inline comment form state
   const [formNama, setFormNama] = useState('');
   const [formAsal, setFormAsal] = useState('');
-  const [formDestinasi, setFormDestinasi] = useState('Paket 1: Waduk Seloromo & Nasi Gandul Gajahmati');
+  const [formDestinasi, setFormDestinasi] = useState(DESTINATION_OPTIONS[0]);
   const [formRating, setFormRating] = useState(5);
   const [formKomentar, setFormKomentar] = useState('');
-  const [formRekomendasi, setFormRekomendasi] = useState(true);
   const [formSuccess, setFormSuccess] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Calculate average rating
-  const avgRating = (
-    reviews.reduce((acc, r) => acc + r.rating, 0) / (reviews.length || 1)
-  ).toFixed(1);
+  const avgRating =
+    reviews.length > 0
+      ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
+      : '0.0';
+
+  const positivePct =
+    reviews.length > 0
+      ? Math.round((reviews.filter((r) => r.rating >= 4).length / reviews.length) * 100)
+      : 0;
 
   const handleHelpful = (id: string) => {
-    setHelpfulMap((prev) => ({
-      ...prev,
-      [id]: (prev[id] || 0) + 1
-    }));
+    if (helpfulClickedMap[id]) return;
+    setHelpfulClickedMap((prev) => ({ ...prev, [id]: true }));
+    if (onHelpfulReview) {
+      onHelpfulReview(id);
+    } else {
+      setLocalHelpfulDelta((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
+
     if (!formNama.trim()) {
       setFormError('Mohon isi nama Anda terlebih dahulu.');
       return;
     }
-    if (formKomentar.trim().length < 10) {
-      setFormError('Mohon tuliskan pengalaman perjalanan minimal 10 karakter.');
+    if (formKomentar.trim().length < 5) {
+      setFormError('Mohon tuliskan komentar minimal 5 karakter.');
       return;
     }
 
+    const formattedDate = new Intl.DateTimeFormat('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }).format(new Date());
+
     const newRev: ReviewItem = {
-      id: `rev-${Date.now()}`,
-      nama: formNama,
-      asal: formAsal || 'Wisatawan Nusantara',
+      id: `rev-user-${Date.now()}`,
+      nama: formNama.trim(),
+      asal: formAsal.trim() || 'Pengunjung',
       destinasi: formDestinasi,
       rating: formRating,
-      tanggal: 'Hari ini',
-      komentar: formKomentar,
-      avatarUrl: `https://images.unsplash.com/photo-${1534528741775 + Math.floor(Math.random() * 50)}?auto=format&fit=crop&w=150&q=80`,
-      rekomendasi: formRekomendasi
+      tanggal: formattedDate,
+      komentar: formKomentar.trim(),
+      rekomendasi: formRating >= 4,
+      helpfulCount: 0
     };
 
     onAddReview(newRev);
 
     try {
       confetti({
-        particleCount: 60,
-        spread: 60,
-        origin: { y: 0.7 }
+        particleCount: 45,
+        spread: 55,
+        origin: { y: 0.75 }
       });
     } catch {}
 
+    setFormNama('');
+    setFormAsal('');
+    setFormKomentar('');
+    setFormRating(5);
     setFormSuccess(true);
-    setTimeout(() => {
-      setFormSuccess(false);
-      setIsModalOpen(false);
-      setFormNama('');
-      setFormAsal('');
-      setFormKomentar('');
-    }, 1200);
+    setTimeout(() => setFormSuccess(false), 3000);
   };
 
   return (
-    <section className="py-12 md:py-16 bg-white dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 transition-colors">
+    <section
+      id="section-ulasan"
+      className="py-12 md:py-16 bg-white dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 transition-colors"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Title */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-slate-100 dark:border-slate-800">
           <div>
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0c2b64]/10 dark:bg-[#1a56a4]/30 border border-[#1a56a4]/30 text-[#0c2b64] dark:text-[#38bdf8] text-xs font-bold uppercase tracking-wider mb-2">
-              <UserCheck className="w-3.5 h-3.5" />
-              Testimoni & Kredibilitas Wisatawan
+              <MessageSquare className="w-3.5 h-3.5" />
+              Ruang Komentar Pengunjung
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-              Ulasan Pengunjung <span className="text-transparent bg-clip-text bg-linear-to-r from-[#0c2b64] via-[#1a56a4] to-[#2575fc] dark:from-[#38bdf8] dark:to-[#60a5fa]">Sedina ing Pati</span>
+              Ulasan & Komentar{' '}
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-[#0c2b64] via-[#1a56a4] to-[#2575fc] dark:from-[#38bdf8] dark:to-[#60a5fa]">
+                Pengunjung Pati
+              </span>
             </h2>
             <p className="mt-1 text-sm sm:text-base text-slate-700 dark:text-slate-300 max-w-2xl font-normal">
-              Pengalaman nyata para pelancong, pecinta kuliner, dan pemerhati budaya yang telah merasakan efisiensi itinerary harian di Kabupaten Pati.
+              Bagikan pengalaman, saran, atau ulasan kunjungan Anda di destinasi Kabupaten Pati secara langsung di kolom bawah ini.
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              setFormError(null);
-              setIsModalOpen(true);
-            }}
-            className="min-h-[44px] inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0c2b64] hover:bg-[#164b91] text-white text-xs sm:text-sm font-bold shadow-md shadow-[#0c2b64]/30 transition-all hover:scale-105 border border-[#38bdf8]/30 cursor-pointer"
+          <a
+            href="https://maps.app.goo.gl/5yEZTarDqncaCara8"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="min-h-[42px] inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-xs font-bold transition self-start md:self-auto"
           >
-            <PlusCircle className="w-4 h-4 text-[#38bdf8]" />
-            <span>Tulis Ulasan Anda</span>
-          </button>
+            <span>Lihat Ulasan Waduk Seloromo di Google Maps</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
         </div>
 
-        {/* Rating Score Card & Breakdown */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-12 gap-6 items-center bg-slate-50 dark:bg-slate-800/40 rounded-3xl p-6 border border-slate-200 dark:border-slate-800">
-          {/* Average Rating (4 Cols) */}
-          <div className="md:col-span-4 text-center md:text-left md:border-r border-slate-200 dark:border-slate-700/60 md:pr-6 space-y-2">
-            <div className="text-5xl font-black text-slate-900 dark:text-white">
-              {avgRating} <span className="text-2xl font-bold text-slate-500 dark:text-slate-300">/ 5.0</span>
+        {/* Main 2-Column Layout: Inline Comment Form + Submitted Reviews */}
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left: Inline Add Comment Form (5 cols) */}
+          <div className="lg:col-span-5 bg-slate-50 dark:bg-slate-800/50 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-xs">
+            <div className="flex items-center gap-2.5 pb-4 border-b border-slate-200/80 dark:border-slate-700/80">
+              <div className="w-9 h-9 rounded-xl bg-[#0c2b64] text-white flex items-center justify-center shrink-0">
+                <MessageSquare className="w-4 h-4 text-[#38bdf8]" />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-900 dark:text-white text-base">
+                  Tulis Komentar / Ulasan
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  Langsung tampil di daftar ulasan website
+                </p>
+              </div>
             </div>
-            <div className="flex items-center justify-center md:justify-start gap-1 text-amber-500">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-5 h-5 fill-current" />
-              ))}
-            </div>
-            <p className="text-xs text-slate-700 dark:text-slate-300">
-              Berdasarkan <strong>{reviews.length} ulasan terverifikasi</strong> wisatawan
-            </p>
-          </div>
 
-          {/* Highlights (8 Cols) */}
-          <div className="md:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center sm:text-left">
-            <div className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-              <span className="text-xs text-slate-600 dark:text-slate-300 font-medium block">Tingkat Kepuasan</span>
-              <span className="text-lg font-bold text-emerald-700 dark:text-emerald-400">98.4% Positif</span>
-              <span className="text-[11px] text-slate-600 dark:text-slate-300 block mt-0.5">Rute efisien & hemat</span>
-            </div>
-            <div className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-              <span className="text-xs text-slate-600 dark:text-slate-300 font-medium block">Akurasi Rute Maps</span>
-              <span className="text-lg font-bold text-blue-700 dark:text-blue-400">100% Valid</span>
-              <span className="text-[11px] text-slate-600 dark:text-slate-300 block mt-0.5">Direct link Maps</span>
-            </div>
-            <div className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-              <span className="text-xs text-slate-600 dark:text-slate-300 font-medium block">Navigasi Presisi</span>
-              <span className="text-lg font-bold text-indigo-700 dark:text-indigo-400">Terverifikasi</span>
-              <span className="text-[11px] text-slate-600 dark:text-slate-300 block mt-0.5">Google Maps siap pakai</span>
-            </div>
-          </div>
-        </div>
+            <form onSubmit={handleSubmit} noValidate className="mt-4 space-y-3.5">
+              {formSuccess && (
+                <div
+                  role="status"
+                  className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-semibold flex items-center gap-2"
+                >
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                  <span>Terima kasih! Komentar Anda telah ditambahkan.</span>
+                </div>
+              )}
 
-        {/* Reviews Grid */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-          {reviews.map((rev) => {
-            const helpfulCount = (helpfulMap[rev.id] || 0);
+              {formError && (
+                <div
+                  role="alert"
+                  className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-xs font-semibold"
+                >
+                  {formError}
+                </div>
+              )}
 
-            return (
-              <div
-                key={rev.id}
-                className="bg-white dark:bg-slate-800/70 rounded-3xl p-6 border border-slate-200 dark:border-slate-700/80 shadow-xs flex flex-col justify-between space-y-4"
-              >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  {/* Top: Avatar, Name, Rating */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={rev.avatarUrl}
-                        alt={rev.nama}
-                        loading="lazy"
-                        decoding="async"
-                        className="w-11 h-11 rounded-full object-cover border-2 border-blue-500/30"
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Nama Anda <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Nama lengkap / panggilan"
+                    value={formNama}
+                    onChange={(e) => setFormNama(e.target.value)}
+                    className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Asal Kota
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: Pati, Kudus, Semarang"
+                    value={formAsal}
+                    onChange={(e) => setFormAsal(e.target.value)}
+                    className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Destinasi yang Dikunjungi
+                </label>
+                <select
+                  value={formDestinasi}
+                  onChange={(e) => setFormDestinasi(e.target.value)}
+                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {DESTINATION_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Rating Kunjungan
+                </label>
+                <div className="flex items-center gap-1.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setFormRating(star)}
+                      aria-label={`Beri ${star} bintang`}
+                      className="p-1 hover:scale-110 transition-transform cursor-pointer"
+                    >
+                      <Star
+                        className={`w-6 h-6 ${
+                          star <= formRating
+                            ? 'fill-amber-400 text-amber-400'
+                            : 'text-slate-300 dark:text-slate-600'
+                        }`}
                       />
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-slate-900 dark:text-white text-sm">
-                            {rev.nama}
-                          </h4>
-                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-semibold flex items-center gap-1">
-                            <CheckCircle2 className="w-2.5 h-2.5" />
-                            Terverifikasi
-                          </span>
+                    </button>
+                  ))}
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 ml-2">
+                    {formRating}.0 / 5.0
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Komentar Anda <span className="text-rose-500">*</span>
+                </label>
+                <textarea
+                  rows={4}
+                  required
+                  placeholder="Ceritakan pengalaman asli Anda saat berkunjung (akses jalan, suasana, fasilitas, atau rekomendasi untuk pengunjung lain)..."
+                  value={formKomentar}
+                  onChange={(e) => setFormKomentar(e.target.value)}
+                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="min-h-[44px] w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl bg-[#0c2b64] hover:bg-[#164b91] text-white font-bold text-xs sm:text-sm shadow-md shadow-[#0c2b64]/25 transition cursor-pointer"
+              >
+                <Send className="w-4 h-4 text-[#38bdf8]" />
+                <span>Kirim Komentar ke Halaman Ini</span>
+              </button>
+            </form>
+          </div>
+
+          {/* Right: Summary + Real Visitor Comments List (7 cols) */}
+          <div className="lg:col-span-7 space-y-5">
+            {/* Real Rating Summary Bar */}
+            <div className="bg-slate-50 dark:bg-slate-800/40 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="text-4xl font-black text-slate-900 dark:text-white">
+                  {avgRating}
+                </div>
+                <div>
+                  <div className="flex items-center gap-0.5 text-amber-500">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-4 h-4 ${
+                          reviews.length > 0 && i < Math.round(Number(avgRating))
+                            ? 'fill-current'
+                            : 'text-slate-300 dark:text-slate-600'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+                    {reviews.length > 0
+                      ? `Dari ${reviews.length} komentar pengunjung`
+                      : 'Belum ada komentar tersimpan'}
+                  </p>
+                </div>
+              </div>
+
+              {reviews.length > 0 && (
+                <div className="px-4 py-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                  Rekomendasi Positif:{' '}
+                  <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                    {positivePct}%
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Comments List or Honest Empty State */}
+            {reviews.length === 0 ? (
+              <div className="rounded-3xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/30 p-8 sm:p-10 text-center space-y-2.5">
+                <div className="w-12 h-12 mx-auto rounded-2xl bg-[#0c2b64]/10 dark:bg-[#1a56a4]/30 text-[#0c2b64] dark:text-[#38bdf8] flex items-center justify-center">
+                  <MessageSquare className="w-6 h-6" />
+                </div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  Belum Ada Komentar Pengunjung
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+                  Kami tidak menampilkan ulasan buatan. Silakan tulis komentar atau pengalaman kunjungan Anda melalui formulir di samping agar tampil di sini.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {reviews.map((rev) => {
+                  const helpfulTotal = (rev.helpfulCount || 0) + (localHelpfulDelta[rev.id] || 0);
+                  const alreadyClicked = Boolean(helpfulClickedMap[rev.id]);
+
+                  return (
+                    <div
+                      key={rev.id}
+                      className="bg-white dark:bg-slate-800/70 rounded-3xl p-5 sm:p-6 border border-slate-200 dark:border-slate-700/80 shadow-xs space-y-3.5"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          {rev.avatarUrl ? (
+                            <img
+                              src={rev.avatarUrl}
+                              alt={rev.nama}
+                              loading="lazy"
+                              decoding="async"
+                              className="w-10 h-10 rounded-full object-cover border border-blue-500/30 shrink-0"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-[#0c2b64] text-white font-bold text-xs flex items-center justify-center shrink-0 border border-[#38bdf8]/40">
+                              {getInitials(rev.nama)}
+                            </div>
+                          )}
+                          <div>
+                            <h4 className="font-bold text-slate-900 dark:text-white text-sm">
+                              {rev.nama}
+                            </h4>
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                              <MapPin className="w-3 h-3 text-blue-500 shrink-0" />
+                              <span>{rev.asal}</span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                          <MapPin className="w-3 h-3 text-blue-500" />
-                          <span>{rev.asal}</span>
+
+                        <div className="flex items-center gap-0.5 text-amber-500 shrink-0">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`w-3.5 h-3.5 ${
+                                i < Math.floor(rev.rating)
+                                  ? 'fill-current'
+                                  : 'text-slate-300 dark:text-slate-600'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 inline-block">
+                          {rev.destinasi}
+                        </span>
+                      </div>
+
+                      <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed">
+                        {rev.komentar}
+                      </p>
+
+                      <div className="pt-3 border-t border-slate-100 dark:border-slate-700/60 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+                        <span>{rev.tanggal}</span>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleHelpful(rev.id)}
+                            disabled={alreadyClicked}
+                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-medium transition cursor-pointer ${
+                              alreadyClicked
+                                ? 'bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
+                                : 'bg-slate-50 dark:bg-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
+                            }`}
+                          >
+                            <ThumbsUp className="w-3.5 h-3.5" />
+                            <span>Membantu ({helpfulTotal})</span>
+                          </button>
+
+                          {onDeleteReview && (
+                            <button
+                              type="button"
+                              onClick={() => onDeleteReview(rev.id)}
+                              title="Hapus komentar"
+                              aria-label="Hapus komentar"
+                              className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
-
-                    {/* Stars */}
-                    <div className="flex items-center gap-0.5 text-amber-500">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-3.5 h-3.5 ${
-                            i < Math.floor(rev.rating) ? 'fill-current' : 'text-slate-300 dark:text-slate-600'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Destination visited tag */}
-                  <div className="mt-3">
-                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 inline-block">
-                      Kunjungan: {rev.destinasi}
-                    </span>
-                  </div>
-
-                  {/* Review Text */}
-                  <p className="mt-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed italic">
-                    "{rev.komentar}"
-                  </p>
-                </div>
-
-                {/* Footer: Date, Google Maps link & Helpful button */}
-                <div className="pt-3 border-t border-slate-100 dark:border-slate-700/60 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
-                  <div className="flex items-center gap-2.5">
-                    <span>{rev.tanggal}</span>
-                    {rev.googleMapsReviewUrl && (
-                      <a
-                        href={rev.googleMapsReviewUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-semibold text-[11px] hover:underline"
-                      >
-                        <span>Ulasan Google Maps</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    )}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handleHelpful(rev.id)}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-50 dark:bg-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-[11px] font-medium transition"
-                  >
-                    <ThumbsUp className="w-3.5 h-3.5" />
-                    <span>Membantu ({helpfulCount})</span>
-                  </button>
-                </div>
+                  );
+                })}
               </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Modal Add Review */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-fadeIn">
-          <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden max-h-[92vh] flex flex-col">
-            <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/40">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-300">
-                  <MessageSquare className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white text-base">
-                    Tulis Ulasan Perjalanan
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Bantu wisatawan lain merencanakan liburan di Pati
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} noValidate className="p-5 overflow-y-auto space-y-4">
-              {formSuccess ? (
-                <div className="py-8 text-center space-y-3">
-                  <div className="w-14 h-14 mx-auto rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-300 flex items-center justify-center animate-bounce">
-                    <CheckCircle2 className="w-8 h-8" />
-                  </div>
-                  <h4 className="font-bold text-lg text-slate-900 dark:text-white">
-                    Ulasan Anda Berhasil Ditayangkan!
-                  </h4>
-                  <p className="text-xs text-slate-700 dark:text-slate-300">
-                    Terima kasih telah berbagi pengalaman otentik perjalanan Anda di Kabupaten Pati.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {formError && (
-                    <div
-                      role="alert"
-                      className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-xs font-semibold"
-                    >
-                      {formError}
-                    </div>
-                  )}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        Nama Anda <span className="text-rose-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="Nama Lengkap"
-                        value={formNama}
-                        onChange={(e) => setFormNama(e.target.value)}
-                        className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        Kota Asal <span className="text-rose-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="Misal: Kudus, Semarang, Jakarta"
-                        value={formAsal}
-                        onChange={(e) => setFormAsal(e.target.value)}
-                        className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      Destinasi / Paket yang Dikunjungi
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Contoh: Paket 1 (Waduk Seloromo & Nasi Gandul)"
-                      value={formDestinasi}
-                      onChange={(e) => setFormDestinasi(e.target.value)}
-                      className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  {/* Rating Selector */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                      Beri Nilai Bintang
-                    </label>
-                    <div className="flex items-center gap-2">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          type="button"
-                          onClick={() => setFormRating(star)}
-                          className="p-1 hover:scale-110 transition-transform"
-                        >
-                          <Star
-                            className={`w-7 h-7 ${
-                              star <= formRating
-                                ? 'fill-amber-400 text-amber-400'
-                                : 'text-slate-300 dark:text-slate-600'
-                            }`}
-                          />
-                        </button>
-                      ))}
-                      <span className="text-xs font-bold text-slate-700 dark:text-slate-300 ml-2">
-                        {formRating}.0 dari 5.0
-                      </span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      Ulasan & Rekomendasi Anda <span className="text-rose-500">*</span>
-                    </label>
-                    <textarea
-                      rows={3}
-                      required
-                      placeholder="Bagaimana kondisi rute, keramahan warga lokal, rasa kuliner khas, dan pengalaman liburan Anda?"
-                      value={formKomentar}
-                      onChange={(e) => setFormKomentar(e.target.value)}
-                      className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                    />
-                  </div>
-
-                  <div className="pt-2 flex items-center justify-end gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setIsModalOpen(false)}
-                      className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition"
-                    >
-                      Batal
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-5 py-2 text-xs sm:text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md transition-all hover:scale-105"
-                    >
-                      Kirimkan Ulasan
-                    </button>
-                  </div>
-                </>
-              )}
-            </form>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </section>
   );
 };

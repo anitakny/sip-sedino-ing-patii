@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express, { type Request, type Response } from 'express';
+import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -9,6 +10,34 @@ const __dirname = path.dirname(__filename);
 const PLACES_API_BASE = 'https://places.googleapis.com/v1';
 const SOLUTION_ID = 'gmp_mcp_codeassist_v1_aistudio';
 const PORT = 3000;
+const REVIEWS_FILE = path.resolve(__dirname, 'data', 'reviews.json');
+
+interface StoredReview {
+  id: string;
+  nama: string;
+  asal: string;
+  destinasi: string;
+  rating: number;
+  tanggal: string;
+  komentar: string;
+  rekomendasi: boolean;
+  helpfulCount: number;
+}
+
+async function readStoredReviews(): Promise<StoredReview[]> {
+  try {
+    const raw = await fs.readFile(REVIEWS_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+async function writeStoredReviews(reviews: StoredReview[]): Promise<void> {
+  await fs.mkdir(path.dirname(REVIEWS_FILE), { recursive: true });
+  await fs.writeFile(REVIEWS_FILE, JSON.stringify(reviews, null, 2), 'utf8');
+}
 
 interface PhotoAttribution {
   displayName: string;
@@ -184,6 +213,108 @@ async function fetchPlacePhotoFromGoogle(
 
 async function startServer() {
   const app = express();
+  app.use(express.json({ limit: '100kb' }));
+
+  app.get('/api/reviews', async (_req: Request, res: Response) => {
+    try {
+      const reviews = await readStoredReviews();
+      res.status(200).json({ reviews });
+    } catch (error) {
+      console.error('[Reviews GET Error]', error);
+      res.status(500).json({ error: 'Gagal memuat komentar.' });
+    }
+  });
+
+  app.post('/api/reviews', async (req: Request, res: Response) => {
+    try {
+      const body = req.body ?? {};
+      const nama = typeof body.nama === 'string' ? body.nama.trim().slice(0, 80) : '';
+      const asal = typeof body.asal === 'string' && body.asal.trim()
+        ? body.asal.trim().slice(0, 80)
+        : 'Pengunjung';
+      const destinasi = typeof body.destinasi === 'string' && body.destinasi.trim()
+        ? body.destinasi.trim().slice(0, 120)
+        : 'Kabupaten Pati';
+      const komentar = typeof body.komentar === 'string' ? body.komentar.trim().slice(0, 1000) : '';
+      const rawRating = Number(body.rating);
+      const rating = Number.isFinite(rawRating) ? Math.min(5, Math.max(1, Math.round(rawRating))) : 5;
+      const rekomendasi = typeof body.rekomendasi === 'boolean' ? body.rekomendasi : rating >= 4;
+
+      if (!nama || komentar.length < 5) {
+        res.status(400).json({ error: 'Nama dan komentar (min. 5 karakter) wajib diisi.' });
+        return;
+      }
+
+      const id = typeof body.id === 'string' && body.id.trim()
+        ? body.id.trim().slice(0, 64)
+        : `rev-user-${Date.now()}`;
+
+      const tanggal = typeof body.tanggal === 'string' && body.tanggal.trim()
+        ? body.tanggal.trim().slice(0, 40)
+        : new Intl.DateTimeFormat('id-ID', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          }).format(new Date());
+
+      const newReview: StoredReview = {
+        id,
+        nama,
+        asal,
+        destinasi,
+        rating,
+        tanggal,
+        komentar,
+        rekomendasi,
+        helpfulCount: 0,
+      };
+
+      const existing = await readStoredReviews();
+      const updated = [newReview, ...existing.filter((item) => item.id !== id)].slice(0, 500);
+      await writeStoredReviews(updated);
+
+      res.status(201).json({ review: newReview });
+    } catch (error) {
+      console.error('[Reviews POST Error]', error);
+      res.status(500).json({ error: 'Gagal menyimpan komentar.' });
+    }
+  });
+
+  app.post('/api/reviews/:id/helpful', async (req: Request, res: Response) => {
+    try {
+      const id = req.params.id;
+      const existing = await readStoredReviews();
+      let found: StoredReview | undefined;
+      const updated = existing.map((item) => {
+        if (item.id === id) {
+          found = { ...item, helpfulCount: (item.helpfulCount ?? 0) + 1 };
+          return found;
+        }
+        return item;
+      });
+
+      if (found) {
+        await writeStoredReviews(updated);
+      }
+      res.status(200).json({ review: found ?? null });
+    } catch (error) {
+      console.error('[Reviews Helpful Error]', error);
+      res.status(500).json({ error: 'Gagal memperbarui tanda membantu.' });
+    }
+  });
+
+  app.delete('/api/reviews/:id', async (req: Request, res: Response) => {
+    try {
+      const id = req.params.id;
+      const existing = await readStoredReviews();
+      const updated = existing.filter((item) => item.id !== id);
+      await writeStoredReviews(updated);
+      res.status(200).json({ deleted: true });
+    } catch (error) {
+      console.error('[Reviews DELETE Error]', error);
+      res.status(500).json({ error: 'Gagal menghapus komentar.' });
+    }
+  });
 
   app.get('/api/places/photo', async (req: Request, res: Response) => {
     const query = typeof req.query.q === 'string' ? req.query.q.trim() : '';
