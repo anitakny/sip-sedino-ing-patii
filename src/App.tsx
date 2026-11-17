@@ -7,7 +7,7 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { MediaContributionSection } from './components/MediaContributionSection';
-import { ReviewsSection } from './components/ReviewsSection';
+import { ReviewsSection, type ReviewUpdatePayload } from './components/ReviewsSection';
 import { Footer } from './components/Footer';
 import { PageSkeleton, MapSkeleton } from './components/LoadingSkeleton';
 import { GooglePlaceImage } from './components/GooglePlaceImage';
@@ -94,6 +94,16 @@ export default function App() {
 
   const LEGACY_AI_REVIEW_IDS = new Set(['rev-1', 'rev-2', 'rev-3', 'rev-4']);
 
+  // Per-browser secret tokens proving authorship for comments created in this browser
+  const [reviewTokens, setReviewTokens] = useState<Record<string, string>>(() => {
+    try {
+      const saved = localStorage.getItem('sip_pati_review_tokens');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
   // Reviews items (only real user-submitted comments)
   const [reviewsList, setReviewsList] = useState<ReviewItem[]>(() => {
     try {
@@ -142,27 +152,112 @@ export default function App() {
     } catch {}
   };
 
-  // Add review handler
+  // Add review handler (generates an author-only editToken stored locally in this browser)
   const handleAddReview = (newReview: ReviewItem) => {
+    const editToken =
+      typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+
+    const updatedTokens = { ...reviewTokens, [newReview.id]: editToken };
+    setReviewTokens(updatedTokens);
+    try {
+      localStorage.setItem('sip_pati_review_tokens', JSON.stringify(updatedTokens));
+    } catch {}
+
     const updated = [newReview, ...reviewsList];
     setReviewsList(updated);
     try {
       localStorage.setItem('sip_pati_reviews', JSON.stringify(updated));
     } catch {}
+
     fetch('/api/reviews', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newReview),
+      body: JSON.stringify({ ...newReview, editToken }),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((payload: { review?: ReviewItem; editToken?: string } | null) => {
+        if (!payload?.review) return;
+        if (payload.review.id !== newReview.id || payload.editToken) {
+          const savedId = payload.review.id;
+          const savedToken = payload.editToken || editToken;
+          setReviewTokens((curr) => {
+            const next = { ...curr, [savedId]: savedToken };
+            try {
+              localStorage.setItem('sip_pati_review_tokens', JSON.stringify(next));
+            } catch {}
+            return next;
+          });
+          if (savedId !== newReview.id) {
+            setReviewsList((curr) => {
+              const next = curr.map((r) => (r.id === newReview.id ? payload.review! : r));
+              try {
+                localStorage.setItem('sip_pati_reviews', JSON.stringify(next));
+              } catch {}
+              return next;
+            });
+          }
+        }
+      })
+      .catch(() => {});
+  };
+
+  const handleEditReview = (id: string, updates: ReviewUpdatePayload) => {
+    const token = reviewTokens[id];
+    if (!token) return;
+
+    const editedAt = new Intl.DateTimeFormat('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }).format(new Date());
+
+    const updated = reviewsList.map((r) =>
+      r.id === id
+        ? {
+            ...r,
+            ...updates,
+            rekomendasi: updates.rating >= 4,
+            editedAt,
+          }
+        : r
+    );
+    setReviewsList(updated);
+    try {
+      localStorage.setItem('sip_pati_reviews', JSON.stringify(updated));
+    } catch {}
+
+    fetch(`/api/reviews/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-review-token': token,
+      },
+      body: JSON.stringify({ ...updates, editToken: token }),
     }).catch(() => {});
   };
 
   const handleDeleteReview = (id: string) => {
+    const token = reviewTokens[id];
+    if (!token) return;
+
     const updated = reviewsList.filter((r) => r.id !== id);
     setReviewsList(updated);
     try {
       localStorage.setItem('sip_pati_reviews', JSON.stringify(updated));
     } catch {}
-    fetch(`/api/reviews/${encodeURIComponent(id)}`, { method: 'DELETE' }).catch(() => {});
+
+    const { [id]: _removed, ...remainingTokens } = reviewTokens;
+    setReviewTokens(remainingTokens);
+    try {
+      localStorage.setItem('sip_pati_review_tokens', JSON.stringify(remainingTokens));
+    } catch {}
+
+    fetch(`/api/reviews/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      headers: { 'x-review-token': token },
+    }).catch(() => {});
   };
 
   const handleHelpfulReview = (id: string) => {
@@ -639,7 +734,9 @@ export default function App() {
             {/* 8. User Reviews & Comments Section */}
             <ReviewsSection
               reviews={reviewsList}
+              ownedReviewIds={Object.keys(reviewTokens)}
               onAddReview={handleAddReview}
+              onEditReview={handleEditReview}
               onDeleteReview={handleDeleteReview}
               onHelpfulReview={handleHelpfulReview}
             />

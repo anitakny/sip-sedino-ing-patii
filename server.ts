@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express, { type Request, type Response } from 'express';
+import crypto from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -22,6 +23,33 @@ interface StoredReview {
   komentar: string;
   rekomendasi: boolean;
   helpfulCount: number;
+  editedAt?: string;
+  editToken?: string;
+}
+
+function toPublicReview(review: StoredReview) {
+  const { editToken: _secret, ...publicFields } = review;
+  return publicFields;
+}
+
+function tokensMatch(expected?: string, provided?: string): boolean {
+  if (!expected || !provided) return false;
+  const a = Buffer.from(expected, 'utf8');
+  const b = Buffer.from(provided, 'utf8');
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
+
+function extractRequestToken(req: Request): string {
+  const headerToken = req.header('x-review-token');
+  if (typeof headerToken === 'string' && headerToken.trim()) {
+    return headerToken.trim();
+  }
+  const bodyToken = req.body?.editToken;
+  if (typeof bodyToken === 'string' && bodyToken.trim()) {
+    return bodyToken.trim();
+  }
+  return '';
 }
 
 async function readStoredReviews(): Promise<StoredReview[]> {
@@ -218,7 +246,7 @@ async function startServer() {
   app.get('/api/reviews', async (_req: Request, res: Response) => {
     try {
       const reviews = await readStoredReviews();
-      res.status(200).json({ reviews });
+      res.status(200).json({ reviews: reviews.map(toPublicReview) });
     } catch (error) {
       console.error('[Reviews GET Error]', error);
       res.status(500).json({ error: 'Gagal memuat komentar.' });
@@ -245,9 +273,16 @@ async function startServer() {
         return;
       }
 
-      const id = typeof body.id === 'string' && body.id.trim()
+      const existing = await readStoredReviews();
+      const requestedId = typeof body.id === 'string' && body.id.trim()
         ? body.id.trim().slice(0, 64)
-        : `rev-user-${Date.now()}`;
+        : '';
+      const id = requestedId && !existing.some((item) => item.id === requestedId)
+        ? requestedId
+        : `rev-user-${crypto.randomUUID()}`;
+
+      const providedToken = extractRequestToken(req);
+      const editToken = providedToken.length >= 12 ? providedToken : crypto.randomUUID();
 
       const tanggal = typeof body.tanggal === 'string' && body.tanggal.trim()
         ? body.tanggal.trim().slice(0, 40)
@@ -267,16 +302,79 @@ async function startServer() {
         komentar,
         rekomendasi,
         helpfulCount: 0,
+        editToken,
       };
 
-      const existing = await readStoredReviews();
-      const updated = [newReview, ...existing.filter((item) => item.id !== id)].slice(0, 500);
+      const updated = [newReview, ...existing].slice(0, 500);
       await writeStoredReviews(updated);
 
-      res.status(201).json({ review: newReview });
+      res.status(201).json({ review: toPublicReview(newReview), editToken });
     } catch (error) {
       console.error('[Reviews POST Error]', error);
       res.status(500).json({ error: 'Gagal menyimpan komentar.' });
+    }
+  });
+
+  app.patch('/api/reviews/:id', async (req: Request, res: Response) => {
+    try {
+      const id = req.params.id;
+      const providedToken = extractRequestToken(req);
+      const existing = await readStoredReviews();
+      const target = existing.find((item) => item.id === id);
+
+      if (!target) {
+        res.status(404).json({ error: 'Komentar tidak ditemukan.' });
+        return;
+      }
+
+      if (!tokensMatch(target.editToken, providedToken)) {
+        res.status(403).json({ error: 'Anda tidak memiliki izin untuk mengedit komentar ini.' });
+        return;
+      }
+
+      const body = req.body ?? {};
+      const nama = typeof body.nama === 'string' && body.nama.trim()
+        ? body.nama.trim().slice(0, 80)
+        : target.nama;
+      const asal = typeof body.asal === 'string' && body.asal.trim()
+        ? body.asal.trim().slice(0, 80)
+        : target.asal;
+      const destinasi = typeof body.destinasi === 'string' && body.destinasi.trim()
+        ? body.destinasi.trim().slice(0, 120)
+        : target.destinasi;
+      const komentar = typeof body.komentar === 'string' ? body.komentar.trim().slice(0, 1000) : target.komentar;
+      const rawRating = body.rating !== undefined ? Number(body.rating) : target.rating;
+      const rating = Number.isFinite(rawRating) ? Math.min(5, Math.max(1, Math.round(rawRating))) : target.rating;
+
+      if (!nama || komentar.length < 5) {
+        res.status(400).json({ error: 'Nama dan komentar (min. 5 karakter) wajib diisi.' });
+        return;
+      }
+
+      const editedAt = new Intl.DateTimeFormat('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }).format(new Date());
+
+      const updatedReview: StoredReview = {
+        ...target,
+        nama,
+        asal,
+        destinasi,
+        rating,
+        komentar,
+        rekomendasi: rating >= 4,
+        editedAt,
+      };
+
+      const updatedList = existing.map((item) => (item.id === id ? updatedReview : item));
+      await writeStoredReviews(updatedList);
+
+      res.status(200).json({ review: toPublicReview(updatedReview) });
+    } catch (error) {
+      console.error('[Reviews PATCH Error]', error);
+      res.status(500).json({ error: 'Gagal memperbarui komentar.' });
     }
   });
 
@@ -296,7 +394,7 @@ async function startServer() {
       if (found) {
         await writeStoredReviews(updated);
       }
-      res.status(200).json({ review: found ?? null });
+      res.status(200).json({ review: found ? toPublicReview(found) : null });
     } catch (error) {
       console.error('[Reviews Helpful Error]', error);
       res.status(500).json({ error: 'Gagal memperbarui tanda membantu.' });
@@ -306,7 +404,20 @@ async function startServer() {
   app.delete('/api/reviews/:id', async (req: Request, res: Response) => {
     try {
       const id = req.params.id;
+      const providedToken = extractRequestToken(req);
       const existing = await readStoredReviews();
+      const target = existing.find((item) => item.id === id);
+
+      if (!target) {
+        res.status(404).json({ error: 'Komentar tidak ditemukan.' });
+        return;
+      }
+
+      if (!tokensMatch(target.editToken, providedToken)) {
+        res.status(403).json({ error: 'Anda tidak memiliki izin untuk menghapus komentar ini.' });
+        return;
+      }
+
       const updated = existing.filter((item) => item.id !== id);
       await writeStoredReviews(updated);
       res.status(200).json({ deleted: true });

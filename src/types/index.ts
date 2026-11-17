@@ -101,6 +101,7 @@ export interface ReviewItem {
   rekomendasi: boolean;
   googleMapsReviewUrl?: string;
   helpfulCount?: number;
+  editedAt?: string;
 }
 
 export interface ContactMessage {
