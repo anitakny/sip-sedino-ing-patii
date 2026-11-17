@@ -31,6 +31,7 @@ export const KontakView: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
 
@@ -42,6 +43,26 @@ export const KontakView: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.nama.trim()) {
+      setFormError('Mohon isi nama lengkap Anda terlebih dahulu.');
+      return;
+    }
+    if (!emailRegex.test(formData.email.trim())) {
+      setFormError('Mohon masukkan alamat email yang valid (contoh: nama@domain.com).');
+      return;
+    }
+    if (!formData.subjek.trim()) {
+      setFormError('Mohon tuliskan subjek pesan Anda.');
+      return;
+    }
+    if (formData.pesan.trim().length < 10) {
+      setFormError('Isi pesan minimal 10 karakter agar tim kami dapat memahami keperluan Anda.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     // Prepare direct mailto URL
@@ -95,7 +116,7 @@ export const KontakView: React.FC = () => {
     },
     {
       q: 'Bagaimana cara menggunakan navigasi peta ke lokasi destinasi?',
-      a: 'Setiap destinasi pada direktori 135 wisata dan jadwal Itinerary SIP telah terhubung langsung dengan tombol Direct Google Maps. Anda cukup menekan tombol tersebut untuk membuka rute navigasi dan estimasi waktu tempuh secara instan di ponsel Anda.'
+      a: 'Setiap destinasi pada direktori destinasi wisata dan jadwal Itinerary SIP telah terhubung langsung dengan tombol Direct Google Maps. Anda cukup menekan tombol tersebut untuk membuka rute navigasi dan estimasi waktu tempuh secara instan di ponsel Anda.'
     },
     {
       q: 'Bagaimana jika kami ingin memesan produk batik Bakaran atau kerajinan kuningan Juwana?',
@@ -170,7 +191,16 @@ export const KontakView: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} noValidate className="space-y-4">
+                {formError && (
+                  <div
+                    role="alert"
+                    className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-xs font-semibold flex items-center gap-2"
+                  >
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{formError}</span>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Nama */}
                   <div>
@@ -267,16 +297,16 @@ export const KontakView: React.FC = () => {
                 </div>
 
                 {/* Submit button */}
-                <div className="pt-2 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
-                    <AlertCircle className="w-3.5 h-3.5 text-blue-500" />
+                <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
+                    <AlertCircle className="w-4 h-4 text-blue-600 shrink-0" />
                     <span>Terhubung otomatis dengan aplikasi email Anda</span>
                   </div>
 
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-blue-500/20 transition-all hover:scale-105 disabled:opacity-50"
+                    className="min-h-[44px] inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#0c2b64] hover:bg-[#164b91] text-white font-bold text-xs sm:text-sm shadow-md shadow-[#0c2b64]/20 transition-all hover:scale-[1.02] disabled:opacity-50 cursor-pointer"
                   >
                     <Send className="w-4 h-4" />
                     <span>{isSubmitting ? 'Mengirimkan...' : 'Kirim Pesan Sekarang'}</span>

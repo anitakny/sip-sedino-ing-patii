@@ -10,10 +10,12 @@ import {
   Navigation,
   Download,
   Share2,
-  FileText
+  FileText,
+  MessageSquare
 } from 'lucide-react';
 import { Destination, CategoryType } from '../types';
 import { DESTINATIONS_DATA } from '../data/destinationsData';
+import { GooglePlaceImage } from './GooglePlaceImage';
 
 interface InteractiveMapProps {
   onSelectDestination?: (dest: Destination) => void;
@@ -187,15 +189,15 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
             <h2 className="mt-2 text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
               Peta Interaktif <span className="text-transparent bg-clip-text bg-linear-to-r from-[#0c2b64] via-[#1a56a4] to-[#2575fc] dark:from-[#38bdf8] dark:to-[#60a5fa]">Destinasi Wisata Pati</span>
             </h2>
-            <p className="mt-1 text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl font-normal">
-              Eksplorasi persebaran 135 destinasi di seluruh Kabupaten Pati dengan pin lokasi presisi dan rute langsung via Google Maps.
+            <p className="mt-1 text-sm sm:text-base text-slate-700 dark:text-slate-300 max-w-2xl font-normal">
+              Eksplorasi persebaran destinasi di seluruh Kabupaten Pati dengan pin lokasi presisi dan rute langsung via Google Maps.
             </p>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="px-3.5 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs font-bold flex items-center gap-1.5">
+            <span className="px-3.5 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200 text-xs font-bold flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5" />
-              <span>135 Titik Terintegrasi Google Maps</span>
+              <span>Terintegrasi Google Maps</span>
             </span>
           </div>
         </div>
@@ -204,13 +206,13 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
         <div className="mt-2 bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Search Box */}
           <div className="relative w-full md:w-80">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-600 dark:text-slate-300" />
             <input
               type="text"
               placeholder="Cari titik peta (misal: Seloromo, Juwana)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full min-h-[44px] pl-9 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -229,10 +231,10 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                 key={cat.id}
                 type="button"
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-all ${
+                className={`min-h-[40px] px-3 py-1.5 rounded-lg whitespace-nowrap transition-all cursor-pointer ${
                   selectedCategory === cat.id
-                    ? 'bg-blue-600 text-white font-semibold shadow-xs'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    ? 'bg-[#0c2b64] text-white font-bold shadow-xs'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
                 {cat.label}
@@ -299,7 +301,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                     <Navigation className="w-4 h-4 text-[#38bdf8] shrink-0" />
                     <span>Navigasi langsung: Klik tombol Google Maps pada destinasi untuk rute berkendara.</span>
                   </div>
-                  <span className="font-bold text-[#38bdf8] text-[11px] shrink-0">135 Titik Siap</span>
+                  <span className="font-bold text-[#38bdf8] text-[11px] shrink-0">Peta Siap Pakai</span>
                 </div>
               </div>
             )}
@@ -328,15 +330,20 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
               <div className="space-y-4">
                 {/* Image */}
                 <div className="relative aspect-16/10 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800">
-                  <img
-                    src={activeDestination.imageUrl}
+                  <GooglePlaceImage
+                    query={`${activeDestination.nama} ${activeDestination.kecamatan} Pati`}
                     alt={activeDestination.nama}
+                    fallbackUrl={activeDestination.imageUrl}
+                    lat={activeDestination.lat}
+                    lng={activeDestination.lng}
+                    eager={true}
+                    showAttribution={false}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide bg-[#0c2b64] text-white shadow-xs border border-[#38bdf8]/30">
+                  <div className="absolute top-2.5 left-2.5 z-20 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide bg-[#0c2b64] text-white shadow-xs border border-[#38bdf8]/30">
                     {activeDestination.kategoriLabel}
                   </div>
-                  <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-md text-xs font-semibold bg-black/70 text-white backdrop-blur">
+                  <div className="absolute bottom-2.5 right-2.5 z-20 px-2 py-0.5 rounded-md text-xs font-semibold bg-black/75 text-white backdrop-blur">
                     ⭐ {activeDestination.rating} ({activeDestination.reviewsCount})
                   </div>
                 </div>
@@ -346,27 +353,39 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-snug">
                     {activeDestination.nama}
                   </h3>
-                  <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 font-medium">
                     <MapPin className="w-3.5 h-3.5 text-[#0c2b64] dark:text-[#38bdf8] shrink-0" />
                     <span>{activeDestination.lokasi}</span>
                   </div>
-                  <div className="mt-2 text-[10px] font-bold px-2 py-1 rounded-md bg-[#0c2b64]/10 dark:bg-[#1a56a4]/30 text-[#0c2b64] dark:text-[#38bdf8]">
-                    📷 Dokumentasi Resmi: {activeDestination.sumberGambar}
-                  </div>
+                  {activeDestination.googleMapsPhotoUrl ? (
+                    <a
+                      href={activeDestination.googleMapsPhotoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 text-[11px] font-bold px-2.5 py-1 rounded-md bg-[#0c2b64]/10 dark:bg-[#1a56a4]/30 text-[#0c2b64] dark:text-[#38bdf8] hover:underline flex items-center justify-between gap-2"
+                    >
+                      <span>📷 Dokumentasi Resmi: {activeDestination.sumberGambar}</span>
+                      <ExternalLink className="w-3 h-3 shrink-0" />
+                    </a>
+                  ) : (
+                    <div className="mt-2 text-[11px] font-bold px-2.5 py-1 rounded-md bg-[#0c2b64]/10 dark:bg-[#1a56a4]/30 text-[#0c2b64] dark:text-[#38bdf8]">
+                      📷 Dokumentasi Resmi: {activeDestination.sumberGambar}
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-xs space-y-1.5">
                   <div className="flex justify-between">
-                    <span className="text-slate-500 dark:text-slate-400">Tiket / Masuk:</span>
+                    <span className="text-slate-600 dark:text-slate-300">Tiket / Masuk:</span>
                     <span className="font-bold text-[#0c2b64] dark:text-[#38bdf8]">{activeDestination.tiket}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500 dark:text-slate-400">Jam Buka:</span>
-                    <span className="font-medium text-slate-700 dark:text-slate-200">{activeDestination.jamBuka || '08.00 - 17.00 WIB'}</span>
+                    <span className="text-slate-600 dark:text-slate-300">Jam Buka:</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">{activeDestination.jamBuka || '08.00 - 17.00 WIB'}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500 dark:text-slate-400">Koordinat GPS:</span>
-                    <span className="font-mono text-slate-700 dark:text-slate-200 text-[11px]">{activeDestination.lat.toFixed(4)}, {activeDestination.lng.toFixed(4)}</span>
+                    <span className="text-slate-600 dark:text-slate-300">Koordinat GPS:</span>
+                    <span className="font-mono text-slate-800 dark:text-slate-200 text-[11px]">{activeDestination.lat.toFixed(4)}, {activeDestination.lng.toFixed(4)}</span>
                   </div>
                 </div>
 
@@ -374,7 +393,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                   <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-1">
                     Daya Tarik Utama
                   </h4>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3">
+                  <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed line-clamp-3">
                     {activeDestination.dayaTarik}
                   </p>
                 </div>
@@ -389,7 +408,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                       {activeDestination.fasilitas.map((fas, i) => (
                         <span
                           key={i}
-                          className="text-[11px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                          className="text-[11px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-medium"
                         >
                           ✓ {fas}
                         </span>
@@ -404,17 +423,29 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
                     href={activeDestination.googleMapsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#0c2b64] hover:bg-[#164b91] text-white text-xs font-bold shadow-md shadow-[#0c2b64]/30 transition-all hover:scale-[1.02] border border-[#38bdf8]/30"
+                    className="min-h-[44px] w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#0c2b64] hover:bg-[#164b91] text-white text-xs font-bold shadow-md shadow-[#0c2b64]/30 transition-all hover:scale-[1.02] border border-[#38bdf8]/30"
                   >
                     <Navigation className="w-4 h-4 text-[#38bdf8]" />
                     <span>Buka Rute Langsung (Google Maps)</span>
                   </a>
 
+                  {activeDestination.googleMapsReviewUrl && (
+                    <a
+                      href={activeDestination.googleMapsReviewUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="min-h-[44px] w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-xs font-bold transition"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      <span>Lihat Ulasan di Google Maps</span>
+                    </a>
+                  )}
+
                   {onSelectDestination && (
                     <button
                       type="button"
                       onClick={() => onSelectDestination(activeDestination)}
-                      className="w-full py-2 px-4 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold transition"
+                      className="min-h-[44px] w-full py-2.5 px-4 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold transition cursor-pointer"
                     >
                       Lihat Rincian Destinasi Lengkap
                     </button>

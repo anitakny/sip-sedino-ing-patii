@@ -6,8 +6,8 @@ export const INITIAL_MEDIA_ITEMS: MediaItem[] = [
     judul: 'Kabut Pagi & Savana Hijau Waduk Seloromo',
     keterangan: 'Pemandangan dramatis saat matahari terbit di Waduk Seloromo berlatar Gunung Muria. Suasana sangat damai dan menyejukkan hati.',
     tipe: 'foto',
-    url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=85',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
+    url: 'https://lh3.googleusercontent.com/grass-cs/AABkmLd4oP3kX9UW5WMLphoqM2Q4HkWtWDAG-Zxb2-1fEvSSfAEBJjIjJBBJ5yuRNe9aqKKC4-62I8WowtEDtfpaeG8jUcqKSnHJ0HTLMVElzZAvJnM4PgJlHMSU5mO0gskVtNtg0kWpBFFIpPzR=w1200-h800-k-no',
+    thumbnailUrl: 'https://lh3.googleusercontent.com/grass-cs/AABkmLd4oP3kX9UW5WMLphoqM2Q4HkWtWDAG-Zxb2-1fEvSSfAEBJjIjJBBJ5yuRNe9aqKKC4-62I8WowtEDtfpaeG8jUcqKSnHJ0HTLMVElzZAvJnM4PgJlHMSU5mO0gskVtNtg0kWpBFFIpPzR=w600-h400-k-no',
     penulis: 'Rian Pratama',
     lokasi: 'Gribigan, Gembong',
     tanggal: '3 hari yang lalu',
@@ -91,7 +91,8 @@ export const INITIAL_REVIEWS: ReviewItem[] = [
     tanggal: '4 November 2026',
     komentar: 'Program Sedina ing Pati (SIP) sangat sistematis! Rutenya terarah dari lereng Muria ke pusat kota tanpa buang waktu macet. Waduk Seloromo pagi hari sungguh magis pemandangannya, lalu ditutup Nasi Gandul Pak H. Gajah yang dagingnya lumer.',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-    rekomendasi: true
+    rekomendasi: true,
+    googleMapsReviewUrl: 'https://maps.app.goo.gl/5yEZTarDqncaCara8'
   },
   {
     id: 'rev-2',

@@ -3,18 +3,22 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { MediaContributionSection } from './components/MediaContributionSection';
-import { GalleryModal } from './components/GalleryModal';
-import { InteractiveMap } from './components/InteractiveMap';
-import { WisataView } from './components/WisataView';
-import { EkrafView } from './components/EkrafView';
-import { TentangKamiView } from './components/TentangKamiView';
-import { KontakView } from './components/KontakView';
 import { ReviewsSection } from './components/ReviewsSection';
 import { Footer } from './components/Footer';
+import { PageSkeleton, MapSkeleton } from './components/LoadingSkeleton';
+import { GooglePlaceImage } from './components/GooglePlaceImage';
+import type { QuickSearchResult } from './components/QuickSearchBar';
+
+const GalleryModal = lazy(() => import('./components/GalleryModal').then((m) => ({ default: m.GalleryModal })));
+const InteractiveMap = lazy(() => import('./components/InteractiveMap').then((m) => ({ default: m.InteractiveMap })));
+const WisataView = lazy(() => import('./components/WisataView').then((m) => ({ default: m.WisataView })));
+const EkrafView = lazy(() => import('./components/EkrafView').then((m) => ({ default: m.EkrafView })));
+const TentangKamiView = lazy(() => import('./components/TentangKamiView').then((m) => ({ default: m.TentangKamiView })));
+const KontakView = lazy(() => import('./components/KontakView').then((m) => ({ default: m.KontakView })));
 
 import { MediaItem, ReviewItem, Destination } from './types';
 import { INITIAL_MEDIA_ITEMS, INITIAL_REVIEWS } from './data/reviewsAndMedia';
@@ -46,13 +50,40 @@ import {
 export default function App() {
   // Navigation state: 'home' | 'tentang' | 'wisata' | 'ekraf' | 'kontak'
   const [activePage, setActivePage] = useState<string>('home');
+  const [wisataTarget, setWisataTarget] = useState<{
+    tab?: 'katalog' | 'itinerary';
+    category?: string;
+    destId?: number | null;
+    packageId?: number | null;
+    nonce: number;
+  }>({ nonce: 0 });
+  const [ekrafTarget, setEkrafTarget] = useState<{
+    productId?: string | null;
+    nonce: number;
+  }>({ nonce: 0 });
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
+
+  useEffect(() => {
+    const handleQuotaExceeded = () => setQuotaExceeded(true);
+    window.addEventListener('gmp-quota-exceeded', handleQuotaExceeded);
+    return () => window.removeEventListener('gmp-quota-exceeded', handleQuotaExceeded);
+  }, []);
 
 
   // Media gallery items
   const [mediaList, setMediaList] = useState<MediaItem[]>(() => {
     try {
       const saved = localStorage.getItem('sip_pati_media');
-      return saved ? JSON.parse(saved) : INITIAL_MEDIA_ITEMS;
+      if (saved) {
+        const parsed: MediaItem[] = JSON.parse(saved);
+        const seloromoMedia = INITIAL_MEDIA_ITEMS.find((m) => m.id === 'media-1');
+        return parsed.map((item) =>
+          item.id === 'media-1' && seloromoMedia && item.url.includes('unsplash.com')
+            ? { ...item, url: seloromoMedia.url, thumbnailUrl: seloromoMedia.thumbnailUrl }
+            : item
+        );
+      }
+      return INITIAL_MEDIA_ITEMS;
     } catch {
       return INITIAL_MEDIA_ITEMS;
     }
@@ -65,7 +96,16 @@ export default function App() {
   const [reviewsList, setReviewsList] = useState<ReviewItem[]>(() => {
     try {
       const saved = localStorage.getItem('sip_pati_reviews');
-      return saved ? JSON.parse(saved) : INITIAL_REVIEWS;
+      if (saved) {
+        const parsed: ReviewItem[] = JSON.parse(saved);
+        const seloromoRev = INITIAL_REVIEWS.find((r) => r.id === 'rev-1');
+        return parsed.map((rev) =>
+          rev.id === 'rev-1' && seloromoRev?.googleMapsReviewUrl && !rev.googleMapsReviewUrl
+            ? { ...rev, googleMapsReviewUrl: seloromoRev.googleMapsReviewUrl }
+            : rev
+        );
+      }
+      return INITIAL_REVIEWS;
     } catch {
       return INITIAL_REVIEWS;
     }
@@ -90,7 +130,55 @@ export default function App() {
   };
 
   const handleNavigate = (page: string) => {
+    if (page === 'wisata') {
+      setWisataTarget((prev) => ({ nonce: prev.nonce + 1 }));
+    } else if (page === 'ekraf') {
+      setEkrafTarget((prev) => ({ nonce: prev.nonce + 1 }));
+    }
     setActivePage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSelectSearchResult = (result: QuickSearchResult) => {
+    if (result.type === 'destination') {
+      setWisataTarget((prev) => ({
+        tab: 'katalog',
+        category: 'all',
+        destId: result.id,
+        packageId: null,
+        nonce: prev.nonce + 1
+      }));
+      setActivePage('wisata');
+    } else if (result.type === 'package') {
+      setWisataTarget((prev) => ({
+        tab: 'itinerary',
+        category: 'all',
+        destId: null,
+        packageId: result.id,
+        nonce: prev.nonce + 1
+      }));
+      setActivePage('wisata');
+    } else {
+      setEkrafTarget((prev) => ({
+        productId: result.id,
+        nonce: prev.nonce + 1
+      }));
+      setActivePage('ekraf');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleQuickFilter = (filterType: 'alam' | 'kuliner' | 'religi' | 'itinerary' | 'ekraf') => {
+    if (filterType === 'ekraf') {
+      setEkrafTarget((prev) => ({ productId: null, nonce: prev.nonce + 1 }));
+      setActivePage('ekraf');
+    } else if (filterType === 'itinerary') {
+      setWisataTarget((prev) => ({ tab: 'itinerary', category: 'all', nonce: prev.nonce + 1 }));
+      setActivePage('wisata');
+    } else {
+      setWisataTarget((prev) => ({ tab: 'katalog', category: filterType, nonce: prev.nonce + 1 }));
+      setActivePage('wisata');
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -117,6 +205,23 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-200">
+      {quotaExceeded && (
+        <div className="bg-amber-50 border-b border-amber-200 text-amber-900 px-4 py-2.5 text-xs md:text-sm text-center sticky top-0 z-50 shadow-sm">
+          <span>
+            Google Maps Platform quota reached. If you are the app owner, visit{' '}
+            <a
+              href="https://developers.google.com/maps/ai/ai-studio?utm_campaign=gmp_mcp_codeassist_v1_aistudio#quota_exceeded_errors"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline font-semibold text-amber-950 hover:text-amber-800"
+            >
+              maps developer site
+            </a>{' '}
+            for instructions to update your account.
+          </span>
+        </div>
+      )}
+
       {/* Top Navigation */}
       <Navbar
         activePage={activePage}
@@ -136,6 +241,8 @@ export default function App() {
                 const el = document.getElementById('section-map');
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
+              onSelectSearchResult={handleSelectSearchResult}
+              onQuickFilter={handleQuickFilter}
             />
 
             {/* 2. Profil Inisiator & Duta Wisata (Mas Saqib) */}
@@ -152,6 +259,8 @@ export default function App() {
                             src={saqibPhoto}
                             alt="Ahmad Husnus Saqib - Finalis Mas Mbak Jateng 2026 Kab. Pati"
                             className="w-full h-auto object-cover group-hover:scale-102 transition duration-500"
+                            fetchPriority="high"
+                            decoding="async"
                           />
                           <div className="absolute bottom-0 inset-x-0 bg-linear-to-t from-black/80 via-black/40 to-transparent p-3 text-center">
                             <span className="text-[11px] font-bold text-[#fbbf24] tracking-wide uppercase">
@@ -177,7 +286,7 @@ export default function App() {
                       </p>
 
                       <p className="text-xs sm:text-sm text-blue-100 leading-relaxed font-normal">
-                        "Melalui program <strong>Sedina ing Pati (SIP)</strong>, kami mendedikasikan rute harian terpadu, direktori 135 destinasi, dan katalog sentra ekonomi kreatif untuk membangkitkan kebanggaan warga Pati dan menggerakkan ekonomi masyarakat secara berkelanjutan."
+                        "Melalui program <strong>Sedina ing Pati (SIP)</strong>, kami mendedikasikan rute harian terpadu, direktori destinasi wisata, dan katalog sentra ekonomi kreatif untuk membangkitkan kebanggaan warga Pati dan menggerakkan ekonomi masyarakat secara berkelanjutan."
                       </p>
 
                       <div className="pt-2 flex flex-wrap items-center gap-3">
@@ -219,12 +328,12 @@ export default function App() {
                   <div>
                     <span className="text-xs font-bold uppercase tracking-wider text-[#0c2b64] dark:text-[#38bdf8] flex items-center gap-1.5">
                       <Sparkles className="w-3.5 h-3.5" />
-                      Database Lengkap 135 Titik
+                      Direktori Wisata Terpadu
                     </span>
                     <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1">
                       Destinasi Wisata & <span className="text-transparent bg-clip-text bg-linear-to-r from-[#0c2b64] via-[#1a56a4] to-[#2575fc] dark:from-[#38bdf8] dark:to-[#60a5fa]">Kuliner Khas Pati</span>
                     </h2>
-                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-xl font-normal">
+                    <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 mt-1 max-w-xl font-normal">
                       Dari panorama alam lereng Gunung Muria, gua karst Kendeng, situs bersejarah Kadipaten Pesantenan, hingga kuliner Nasi Gandul otentik.
                     </p>
                   </div>
@@ -232,9 +341,9 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => handleNavigate('wisata')}
-                    className="px-5 py-2.5 rounded-xl bg-[#0c2b64] hover:bg-[#164b91] text-white text-xs sm:text-sm font-bold inline-flex items-center gap-2 transition shadow-md border border-[#38bdf8]/30 shrink-0 self-start md:self-auto"
+                    className="min-h-[44px] px-5 py-2.5 rounded-xl bg-[#0c2b64] hover:bg-[#164b91] text-white text-xs sm:text-sm font-bold inline-flex items-center gap-2 transition shadow-md border border-[#38bdf8]/30 shrink-0 self-start md:self-auto cursor-pointer"
                   >
-                    <span>Lihat Destinasi Selengkapnya (135 Wisata)</span>
+                    <span>Lihat Destinasi Selengkapnya</span>
                     <ArrowRight className="w-4 h-4 text-[#38bdf8]" />
                   </button>
                 </div>
@@ -248,13 +357,15 @@ export default function App() {
                       className="group bg-slate-50 dark:bg-slate-800/60 rounded-3xl overflow-hidden border border-slate-200/80 dark:border-slate-700/80 hover:border-[#1a56a4] dark:hover:border-[#38bdf8] hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer transform hover:-translate-y-1"
                     >
                       <div className="relative aspect-16/10 w-full overflow-hidden bg-slate-200 dark:bg-slate-700">
-                        <img
-                          src={dest.imageUrl}
+                        <GooglePlaceImage
+                          query={`${dest.nama} ${dest.kecamatan} Pati`}
                           alt={dest.nama}
+                          fallbackUrl={dest.imageUrl}
+                          lat={dest.lat}
+                          lng={dest.lng}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          loading="lazy"
                         />
-                        <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-[#071736]/80 backdrop-blur-md text-white text-[10px] font-bold">
+                        <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-[#071736]/85 backdrop-blur-md text-white text-[10px] font-bold">
                           {dest.kategori.toUpperCase()}
                         </div>
                         <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-amber-400 text-slate-900 text-[10px] font-extrabold flex items-center gap-1 shadow-sm">
@@ -264,25 +375,39 @@ export default function App() {
 
                       <div className="p-4 flex-1 flex flex-col justify-between">
                         <div>
-                          <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+                          <div className="flex items-center gap-1 text-[11px] text-slate-600 dark:text-slate-300 font-medium">
                             <MapPin className="w-3 h-3 text-[#0c2b64] dark:text-[#38bdf8] shrink-0" />
                             <span className="truncate">{dest.lokasi}</span>
                           </div>
                           <h3 className="mt-1 font-bold text-sm text-slate-900 dark:text-white group-hover:text-[#0c2b64] dark:group-hover:text-[#38bdf8] transition-colors line-clamp-1">
                             {dest.nama}
                           </h3>
-                          <p className="mt-1.5 text-xs text-slate-600 dark:text-slate-300 line-clamp-2 font-normal leading-relaxed">
+                          <p className="mt-1.5 text-xs text-slate-700 dark:text-slate-300 line-clamp-2 font-normal leading-relaxed">
                             {dest.dayaTarik}
                           </p>
                         </div>
 
-                        <div className="mt-4 pt-3 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-xs">
+                        <div className="mt-4 pt-3 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between gap-2 text-xs">
                           <span className="font-bold text-[#0c2b64] dark:text-[#38bdf8]">
                             {dest.tiket}
                           </span>
-                          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                            Selengkapnya <ChevronRight className="w-3.5 h-3.5 text-[#1a56a4]" />
-                          </span>
+                          <div className="flex items-center gap-2">
+                            {dest.googleMapsReviewUrl && (
+                              <a
+                                href={dest.googleMapsReviewUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="text-[11px] font-bold text-amber-700 dark:text-amber-300 hover:underline flex items-center gap-0.5"
+                                title="Buka Ulasan di Google Maps"
+                              >
+                                Ulasan Maps <ExternalLink className="w-3 h-3" />
+                              </a>
+                            )}
+                            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                              Selengkapnya <ChevronRight className="w-3.5 h-3.5 text-[#1a56a4]" />
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -370,11 +495,21 @@ export default function App() {
 
             {/* 5. Interactive Map Section */}
             <div id="section-map">
-              <InteractiveMap
-                onSelectDestination={() => {
-                  handleNavigate('wisata');
-                }}
-              />
+              <Suspense fallback={<MapSkeleton />}>
+                <InteractiveMap
+                  onSelectDestination={(dest) => {
+                    setWisataTarget((prev) => ({
+                      tab: 'katalog',
+                      category: 'all',
+                      destId: dest.id,
+                      packageId: null,
+                      nonce: prev.nonce + 1
+                    }));
+                    setActivePage('wisata');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                />
+              </Suspense>
             </div>
 
             {/* 6. Section Ekonomi Kreatif (Ekraf) & UMKM */}
@@ -389,7 +524,7 @@ export default function App() {
                     <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1">
                       Ekonomi Kreatif <span className="text-transparent bg-clip-text bg-linear-to-r from-[#0c2b64] via-[#1a56a4] to-[#2575fc] dark:from-[#38bdf8] dark:to-[#60a5fa]">(Ekraf) Pati</span>
                     </h2>
-                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-xl font-normal">
+                    <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 mt-1 max-w-xl font-normal">
                       Dukung perajin lokal dari sentra Batik Tulis Bakaran Juwana, kerajinan kuningan, olahan bandeng duri lunak, hingga kopi robusta Muria.
                     </p>
                   </div>
@@ -397,7 +532,7 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => handleNavigate('ekraf')}
-                    className="px-5 py-2.5 rounded-xl bg-[#0c2b64] hover:bg-[#164b91] text-white text-xs sm:text-sm font-bold inline-flex items-center gap-2 transition shadow-md border border-[#38bdf8]/30 shrink-0 self-start md:self-auto"
+                    className="min-h-[44px] px-5 py-2.5 rounded-xl bg-[#0c2b64] hover:bg-[#164b91] text-white text-xs sm:text-sm font-bold inline-flex items-center gap-2 transition shadow-md border border-[#38bdf8]/30 shrink-0 self-start md:self-auto cursor-pointer"
                   >
                     <span>Lihat Katalog Ekraf Selengkapnya</span>
                     <ArrowRight className="w-4 h-4 text-[#38bdf8]" />
@@ -413,11 +548,11 @@ export default function App() {
                       className="group bg-slate-50 dark:bg-slate-800/60 rounded-3xl overflow-hidden border border-slate-200/80 dark:border-slate-700/80 hover:border-[#1a56a4] dark:hover:border-[#38bdf8] hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer transform hover:-translate-y-1"
                     >
                       <div className="relative aspect-16/10 w-full overflow-hidden bg-slate-200 dark:bg-slate-700">
-                        <img
-                          src={prod.imageUrl}
+                        <GooglePlaceImage
+                          query={`${prod.nama} ${prod.lokasiSentra} Pati`}
                           alt={prod.nama}
+                          fallbackUrl={prod.imageUrl}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          loading="lazy"
                         />
                         <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-[#071736]/80 backdrop-blur-md text-white text-[10px] font-bold">
                           {prod.kategori}
@@ -498,25 +633,55 @@ export default function App() {
         )}
 
         {/* ================= PAGE: TENTANG KAMI ================= */}
-        {activePage === 'tentang' && <TentangKamiView />}
+        {activePage === 'tentang' && (
+          <Suspense fallback={<PageSkeleton />}>
+            <TentangKamiView />
+          </Suspense>
+        )}
 
         {/* ================= PAGE: WISATA ================= */}
-        {activePage === 'wisata' && <WisataView />}
+        {activePage === 'wisata' && (
+          <Suspense fallback={<PageSkeleton />}>
+            <WisataView
+              key={wisataTarget.nonce}
+              initialTab={wisataTarget.tab}
+              initialCategory={wisataTarget.category}
+              initialDestId={wisataTarget.destId}
+              initialPackageId={wisataTarget.packageId}
+            />
+          </Suspense>
+        )}
 
         {/* ================= PAGE: EKRAF ================= */}
-        {activePage === 'ekraf' && <EkrafView onOpenLightbox={handleOpenSimpleImage} />}
+        {activePage === 'ekraf' && (
+          <Suspense fallback={<PageSkeleton />}>
+            <EkrafView
+              key={ekrafTarget.nonce}
+              initialProductId={ekrafTarget.productId}
+              onOpenLightbox={handleOpenSimpleImage}
+            />
+          </Suspense>
+        )}
 
         {/* ================= PAGE: KONTAK ================= */}
-        {activePage === 'kontak' && <KontakView />}
+        {activePage === 'kontak' && (
+          <Suspense fallback={<PageSkeleton />}>
+            <KontakView />
+          </Suspense>
+        )}
       </main>
 
       {/* Global Lightbox / Zoom Modal */}
-      <GalleryModal
-        item={activeLightboxItem}
-        items={mediaList}
-        onClose={() => setActiveLightboxItem(null)}
-        onSelect={(item) => setActiveLightboxItem(item)}
-      />
+      {activeLightboxItem && (
+        <Suspense fallback={null}>
+          <GalleryModal
+            item={activeLightboxItem}
+            items={mediaList}
+            onClose={() => setActiveLightboxItem(null)}
+            onSelect={(item) => setActiveLightboxItem(item)}
+          />
+        </Suspense>
+      )}
 
       {/* Footer */}
       <Footer
@@ -524,7 +689,7 @@ export default function App() {
       />
 
       {/* Mobile Bottom Navigation Bar for Responsive Convenience */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-3 py-2 flex items-center justify-around shadow-lg">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-2 py-1.5 flex items-center justify-around shadow-lg">
         {[
           { id: 'home', label: 'Home', icon: Compass },
           { id: 'wisata', label: 'Wisata', icon: Layers },
@@ -539,14 +704,14 @@ export default function App() {
               key={item.id}
               type="button"
               onClick={() => handleNavigate(item.id)}
-              className={`flex flex-col items-center gap-1 px-2 py-1 rounded-xl transition ${
+              className={`min-h-[46px] min-w-[56px] flex flex-col items-center justify-center gap-1 px-2 py-1 rounded-xl transition ${
                 isActive
-                  ? 'text-[#0c2b64] dark:text-[#38bdf8] font-bold'
-                  : 'text-slate-500 dark:text-slate-400 font-medium'
+                  ? 'text-[#0c2b64] dark:text-[#38bdf8] font-bold bg-[#0c2b64]/5 dark:bg-[#1a56a4]/20'
+                  : 'text-slate-700 dark:text-slate-300 font-medium'
               }`}
             >
               <Icon className="w-4 h-4" />
-              <span className="text-[10px]">{item.label}</span>
+              <span className="text-[11px]">{item.label}</span>
             </button>
           );
         })}

@@ -19,6 +19,8 @@ export interface Destination {
   sumberGambar: string;
   imageUrl: string;
   googleMapsUrl: string;
+  googleMapsPhotoUrl?: string;
+  googleMapsReviewUrl?: string;
   lat: number;
   lng: number;
   rating: number;
@@ -97,6 +99,7 @@ export interface ReviewItem {
   komentar: string;
   avatarUrl: string;
   rekomendasi: boolean;
+  googleMapsReviewUrl?: string;
 }
 
 export interface ContactMessage {

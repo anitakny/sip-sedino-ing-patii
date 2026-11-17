@@ -110,7 +110,7 @@ export const TentangKamiView: React.FC = () => {
                   "Kabupaten Pati menyimpan kekayaan luar biasa: dari sejuknya waduk dan perkebunan kopi lereng Gunung Muria, keajaiban gua karst Pegunungan Kendeng, jejak cikal bakal Kadipaten Pesantenan warisan Majapahit, hingga adiluhungnya Batik Tulis Bakaran dan kelezatan kuliner Nasi Gandul beralas daun pisang."
                 </p>
                 <p>
-                  "Melalui inisiatif <strong>SIP: Sedina ing Pati</strong>, kami merumuskan <strong>Formula Itinerary Terpadu</strong> dan direktori <strong>135 destinasi lengkap</strong>. Tujuannya adalah memastikan setiap pelancong yang singgah memiliki panduan yang jelas, rute searah tanpa macet, koordinat Google Maps terintegrasi, dan berkontribusi langsung pada kesejahteraan para pelaku UMKM ekonomi kreatif lokal."
+                  "Melalui inisiatif <strong>SIP: Sedina ing Pati</strong>, kami merumuskan <strong>Formula Itinerary Terpadu</strong> dan direktori <strong>destinasi lengkap</strong>. Tujuannya adalah memastikan setiap pelancong yang singgah memiliki panduan yang jelas, rute searah tanpa macet, koordinat Google Maps terintegrasi, dan berkontribusi langsung pada kesejahteraan para pelaku UMKM ekonomi kreatif lokal."
                 </p>
               </div>
 
@@ -121,12 +121,12 @@ export const TentangKamiView: React.FC = () => {
                   <div className="text-[11px] text-slate-300">Rute Harian Efisien</div>
                 </div>
                 <div className="p-3 rounded-xl bg-white/10 border border-white/15">
-                  <div className="text-lg font-black text-[#38bdf8]">135 Titik</div>
-                  <div className="text-[11px] text-slate-300">Wisata & Kuliner Valid</div>
+                  <div className="text-lg font-black text-[#38bdf8]">Direktori Pati</div>
+                  <div className="text-[11px] text-slate-300">Wisata &amp; Kuliner Valid</div>
                 </div>
                 <div className="p-3 rounded-xl bg-white/10 border border-white/15 col-span-2 sm:col-span-1">
-                  <div className="text-lg font-black text-emerald-400">100% Advokasi</div>
-                  <div className="text-[11px] text-slate-300">Pemberdayaan UMKM</div>
+                  <div className="text-lg font-black text-emerald-400">Advokasi UMKM</div>
+                  <div className="text-[11px] text-slate-300">Pemberdayaan Lokal</div>
                 </div>
               </div>
             </div>
@@ -155,7 +155,7 @@ export const TentangKamiView: React.FC = () => {
               Misi & Komitmen
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-              Menyusun rencana perjalanan harian searah yang efisien (zero-waste travel time), mempromosikan 135 destinasi autentik, dan memberdayakan 6 sub-sektor ekonomi kreatif (Ekraf) secara langsung tanpa perantara.
+              Menyusun rencana perjalanan harian searah yang efisien (zero-waste travel time), mempromosikan destinasi autentik, dan memberdayakan sub-sektor ekonomi kreatif (Ekraf) secara langsung tanpa perantara.
             </p>
           </div>
 

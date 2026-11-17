@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Search,
   Filter,
@@ -19,20 +19,34 @@ import {
   Sparkles,
   Share2,
   Check,
-  Navigation
+  Navigation,
+  X,
+  MessageSquare
 } from 'lucide-react';
-import { Destination, CategoryType, ItineraryPackage } from '../types';
+import { Destination, ItineraryPackage } from '../types';
 import { DESTINATIONS_DATA, CATEGORIES_CONFIG, KECAMATAN_LIST } from '../data/destinationsData';
 import { PACKAGES_DATA } from '../data/packagesData';
+import { GooglePlaceImage } from './GooglePlaceImage';
+import type { GooglePlacePhotoData } from '../services/placesPhotoService';
 
 interface WisataViewProps {
   onOpenLightbox?: (imgUrl: string, title: string) => void;
+  initialTab?: 'katalog' | 'itinerary';
+  initialCategory?: string;
+  initialDestId?: number | null;
+  initialPackageId?: number | null;
 }
 
-export const WisataView: React.FC<WisataViewProps> = () => {
-  const [activeTab, setActiveTab] = useState<'katalog' | 'itinerary'>('katalog');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+export const WisataView: React.FC<WisataViewProps> = ({
+  initialTab = 'katalog',
+  initialCategory = 'all',
+  initialDestId = null,
+  initialPackageId = null
+}) => {
+  const [activeTab, setActiveTab] = useState<'katalog' | 'itinerary'>(initialTab);
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedKecamatan, setSelectedKecamatan] = useState('Semua Kecamatan');
   const [priceFilter, setPriceFilter] = useState<'all' | 'free' | 'under10k'>('all');
   const [bookmarkedIds, setBookmarkedIds] = useState<number[]>(() => {
@@ -45,9 +59,19 @@ export const WisataView: React.FC<WisataViewProps> = () => {
   });
 
   // Modal detail destination
-  const [selectedDestDetail, setSelectedDestDetail] = useState<Destination | null>(null);
-  const [selectedPackageDetail, setSelectedPackageDetail] = useState<ItineraryPackage | null>(null);
+  const [selectedDestDetail, setSelectedDestDetail] = useState<Destination | null>(() =>
+    initialDestId ? DESTINATIONS_DATA.find((d) => d.id === initialDestId) || null : null
+  );
+  const [selectedPackageDetail, setSelectedPackageDetail] = useState<ItineraryPackage | null>(() =>
+    initialPackageId ? PACKAGES_DATA.find((p) => p.id === initialPackageId) || null : null
+  );
   const [copiedLink, setCopiedLink] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(12);
+  const [placeMetaMap, setPlaceMetaMap] = useState<Record<number, GooglePlacePhotoData>>({});
+
+  useEffect(() => {
+    setVisibleCount(12);
+  }, [selectedCategory, selectedKecamatan, priceFilter, searchQuery]);
 
   const toggleBookmark = (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -71,14 +95,20 @@ export const WisataView: React.FC<WisataViewProps> = () => {
       dest.aktivitas.toLowerCase().includes(searchQuery.toLowerCase());
 
     let matchPrice = true;
+    const lowerTicket = dest.tiket.toLowerCase();
+    const isFree = lowerTicket.includes('gratis') || lowerTicket.includes('free');
     if (priceFilter === 'free') {
-      matchPrice = dest.tiket.toLowerCase().includes('gratis') || dest.tiket.toLowerCase().includes('free');
+      matchPrice = isFree;
     } else if (priceFilter === 'under10k') {
-      matchPrice = dest.tiket.includes('3.000') || dest.tiket.includes('5.000') || dest.tiket.toLowerCase().includes('gratis');
+      const numMatch = dest.tiket.replace(/\./g, '').match(/\d+/);
+      const priceValue = numMatch ? parseInt(numMatch[0], 10) : Infinity;
+      matchPrice = isFree || priceValue <= 10000;
     }
 
     return matchCat && matchKec && matchSearch && matchPrice;
   });
+
+  const searchSuggestions = searchQuery.trim().length > 0 ? filteredDestinations.slice(0, 6) : [];
 
   const handleShare = (nama: string, mapsUrl: string) => {
     if (navigator.share) {
@@ -107,43 +137,43 @@ export const WisataView: React.FC<WisataViewProps> = () => {
             <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
               Eksplorasi Destinasi & <span className="text-transparent bg-clip-text bg-linear-to-r from-[#0c2b64] via-[#1a56a4] to-[#2575fc] dark:from-[#38bdf8] dark:to-[#60a5fa]">Itinerary SIP</span>
             </h1>
-            <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl font-normal">
-              Temukan 135 destinasi pilihan autentik lengkap dengan koordinat Google Maps dan pilihan paket Itinerary SIP (Sedina ing Pati) terpadu.
+            <p className="mt-2 text-sm sm:text-base text-slate-700 dark:text-slate-300 max-w-2xl font-normal">
+              Temukan destinasi pilihan autentik lengkap dengan koordinat Google Maps dan pilihan paket Itinerary SIP (Sedina ing Pati) terpadu.
             </p>
           </div>
 
           {/* Tab Selector */}
           <div className="flex items-center gap-3">
-            <div className="flex p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+            <div className="flex p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => setActiveTab('katalog')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+                className={`min-h-[44px] flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer ${
                   activeTab === 'katalog'
                     ? 'bg-[#0c2b64] text-white shadow-md'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <Layers className="w-4 h-4" />
-                <span>135 Destinasi Lengkap</span>
+                <Layers className="w-4 h-4 shrink-0" />
+                <span>Destinasi</span>
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('itinerary')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+                className={`min-h-[44px] flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer ${
                   activeTab === 'itinerary'
                     ? 'bg-[#0c2b64] text-white shadow-md'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <Calendar className="w-4 h-4" />
-                <span>Itinerary SIP (Sedina ing Pati)</span>
+                <Calendar className="w-4 h-4 shrink-0" />
+                <span>Itinerary SIP</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* ================= TAB 1: 135 DESTINASI ================= */}
+        {/* ================= TAB 1: DESTINASI ================= */}
         {activeTab === 'katalog' && (
           <div className="mt-8 space-y-8">
             {/* Filter Card */}
@@ -155,38 +185,68 @@ export const WisataView: React.FC<WisataViewProps> = () => {
                     key={cat.id}
                     type="button"
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={`flex items-center gap-2 px-3.5 py-2 rounded-xl whitespace-nowrap transition-all ${
+                    className={`min-h-[40px] flex items-center gap-2 px-3.5 py-2 rounded-xl whitespace-nowrap transition-all cursor-pointer ${
                       selectedCategory === cat.id
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                        ? 'bg-[#0c2b64] text-white shadow-sm'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
                   >
                     <span>{cat.label}</span>
-                    <span
-                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                        selectedCategory === cat.id
-                          ? 'bg-blue-700 text-white'
-                          : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400'
-                      }`}
-                    >
-                      {cat.count}
-                    </span>
                   </button>
                 ))}
               </div>
 
-              {/* Sub filters: Search, Kecamatan, Price */}
+              {/* Sub filters: Search with Auto-Suggest, Kecamatan, Price */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-                {/* Search */}
+                {/* Search with Auto-Suggest */}
                 <div className="lg:col-span-6 relative">
-                  <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-600 dark:text-slate-300 pointer-events-none" />
                   <input
                     type="text"
                     placeholder="Cari nama destinasi, daya tarik, kuliner khas..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onFocus={() => setShowSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 180)}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setShowSuggestions(true);
+                    }}
+                    className="w-full min-h-[44px] pl-9 pr-10 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      aria-label="Hapus kata kunci"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+
+                  {showSuggestions && searchSuggestions.length > 0 && (
+                    <div className="absolute left-0 right-0 top-[48px] z-30 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden max-h-64 overflow-y-auto">
+                      {searchSuggestions.map((s) => (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onMouseDown={() => {
+                            setSelectedDestDetail(s);
+                            setShowSuggestions(false);
+                          }}
+                          className="w-full px-4 py-2.5 text-left hover:bg-blue-50 dark:hover:bg-slate-800 flex items-center justify-between gap-2 border-b last:border-b-0 border-slate-100 dark:border-slate-800"
+                        >
+                          <div className="min-w-0">
+                            <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">{s.nama}</div>
+                            <div className="text-[11px] text-slate-600 dark:text-slate-300 truncate">{s.lokasi} • {s.tiket}</div>
+                          </div>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 shrink-0">
+                            {s.kategoriLabel}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Kecamatan Dropdown */}
@@ -194,7 +254,8 @@ export const WisataView: React.FC<WisataViewProps> = () => {
                   <select
                     value={selectedKecamatan}
                     onChange={(e) => setSelectedKecamatan(e.target.value)}
-                    className="w-full px-3 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+                    aria-label="Filter berdasarkan kecamatan"
+                    className="w-full min-h-[44px] px-3 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
                   >
                     {KECAMATAN_LIST.map((kec) => (
                       <option key={kec} value={kec}>
@@ -208,8 +269,9 @@ export const WisataView: React.FC<WisataViewProps> = () => {
                 <div className="lg:col-span-3">
                   <select
                     value={priceFilter}
-                    onChange={(e) => setPriceFilter(e.target.value as any)}
-                    className="w-full px-3 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+                    onChange={(e) => setPriceFilter(e.target.value as 'all' | 'free' | 'under10k')}
+                    aria-label="Filter berdasarkan harga tiket"
+                    className="w-full min-h-[44px] px-3 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold"
                   >
                     <option value="all">Semua Tiket</option>
                     <option value="free">Gratis Masuk</option>
@@ -219,20 +281,59 @@ export const WisataView: React.FC<WisataViewProps> = () => {
               </div>
             </div>
 
-            {/* Results count & Quick action */}
-            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+            {/* Results info & Quick action */}
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-700 dark:text-slate-300">
               <span className="font-semibold">
-                Menampilkan {filteredDestinations.length} destinasi dari total database Kabupaten Pati
+                Menampilkan daftar destinasi Kabupaten Pati
               </span>
-              <span className="text-[11px] text-slate-400 dark:text-slate-500">
-                Data terverifikasi siap navigasi Maps
-              </span>
+              {(selectedCategory !== 'all' || selectedKecamatan !== 'Semua Kecamatan' || priceFilter !== 'all' || searchQuery) ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedCategory('all');
+                    setSelectedKecamatan('Semua Kecamatan');
+                    setPriceFilter('all');
+                    setSearchQuery('');
+                  }}
+                  className="text-xs font-bold text-[#0c2b64] dark:text-[#38bdf8] hover:underline"
+                >
+                  Reset Semua Filter
+                </button>
+              ) : (
+                <span className="text-[11px] text-slate-600 dark:text-slate-300 font-medium">
+                  Data terverifikasi siap navigasi Maps
+                </span>
+              )}
             </div>
 
-            {/* Destination Cards Grid */}
+            {filteredDestinations.length === 0 ? (
+              <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-10 text-center space-y-3">
+                <p className="text-sm font-bold text-slate-900 dark:text-white">
+                  Tidak ada destinasi yang sesuai dengan filter Anda.
+                </p>
+                <p className="text-xs text-slate-600 dark:text-slate-300">
+                  Coba ubah kata kunci pencarian, kecamatan, atau kategori tiket.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedCategory('all');
+                    setSelectedKecamatan('Semua Kecamatan');
+                    setPriceFilter('all');
+                    setSearchQuery('');
+                  }}
+                  className="min-h-[44px] px-5 py-2.5 rounded-xl bg-[#0c2b64] text-white text-xs font-bold hover:bg-[#164b91] transition"
+                >
+                  Tampilkan Semua Destinasi
+                </button>
+              </div>
+            ) : (
+            /* Destination Cards Grid */
+            <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredDestinations.map((dest) => {
+              {filteredDestinations.slice(0, visibleCount).map((dest) => {
                 const isBookmarked = bookmarkedIds.includes(dest.id);
+                const livePlace = placeMetaMap[dest.id];
 
                 return (
                   <div
@@ -242,15 +343,23 @@ export const WisataView: React.FC<WisataViewProps> = () => {
                   >
                     {/* Image Box */}
                     <div className="relative aspect-16/10 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-                      <img
-                        src={dest.imageUrl}
+                      <GooglePlaceImage
+                        query={`${dest.nama} ${dest.kecamatan} Pati`}
                         alt={dest.nama}
+                        fallbackUrl={dest.imageUrl}
+                        lat={dest.lat}
+                        lng={dest.lng}
+                        showAttribution={false}
+                        onPlaceLoaded={(data) =>
+                          setPlaceMetaMap((prev) =>
+                            prev[dest.id] ? prev : { ...prev, [dest.id]: data }
+                          )
+                        }
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        loading="lazy"
                       />
 
                       {/* Top Badges */}
-                      <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                      <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5">
                         <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-blue-600 text-white shadow-xs">
                           {dest.kategoriLabel}
                         </span>
@@ -266,7 +375,7 @@ export const WisataView: React.FC<WisataViewProps> = () => {
                       <button
                         type="button"
                         onClick={(e) => toggleBookmark(dest.id, e)}
-                        className="absolute top-3 right-3 p-2 rounded-xl bg-black/50 hover:bg-black/70 text-white backdrop-blur transition-all"
+                        className="absolute top-3 right-3 z-20 p-2 rounded-xl bg-black/50 hover:bg-black/70 text-white backdrop-blur transition-all"
                         title={isBookmarked ? 'Hapus dari daftar favorit' : 'Simpan ke rencana perjalanan'}
                       >
                         {isBookmarked ? (
@@ -277,9 +386,9 @@ export const WisataView: React.FC<WisataViewProps> = () => {
                       </button>
 
                       {/* Bottom Image Stats */}
-                      <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-white text-xs font-semibold">
+                      <div className="absolute bottom-2.5 left-3 right-3 z-20 flex items-center justify-between text-white text-xs font-semibold">
                         <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur">
-                          ⭐ {dest.rating} ({dest.reviewsCount})
+                          ⭐ {livePlace?.rating ?? dest.rating} ({livePlace?.userRatingCount ?? dest.reviewsCount})
                         </span>
                         <span className="px-2 py-0.5 rounded-md bg-blue-900/80 backdrop-blur">
                           {dest.tiket}
@@ -301,20 +410,59 @@ export const WisataView: React.FC<WisataViewProps> = () => {
                           {dest.dayaTarik}
                         </p>
                         <div className="mt-2.5">
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#0c2b64]/10 dark:bg-[#1a56a4]/30 text-[#0c2b64] dark:text-[#38bdf8] truncate block max-w-full">
-                            📷 Dokumentasi Resmi: {dest.sumberGambar}
-                          </span>
+                          {livePlace?.photoUrl && livePlace.photoAttribution ? (
+                            <span
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#0c2b64]/10 dark:bg-[#1a56a4]/30 text-[#0c2b64] dark:text-[#38bdf8] truncate block max-w-full"
+                            >
+                              📷 Foto Google Maps:{' '}
+                              <a
+                                href={livePlace.photoAttribution.uri}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline"
+                              >
+                                {livePlace.photoAttribution.displayName}
+                              </a>
+                            </span>
+                          ) : dest.googleMapsPhotoUrl ? (
+                            <a
+                              href={dest.googleMapsPhotoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#0c2b64]/10 dark:bg-[#1a56a4]/30 text-[#0c2b64] dark:text-[#38bdf8] hover:underline truncate block max-w-full"
+                            >
+                              📷 Foto: {dest.sumberGambar} ↗
+                            </a>
+                          ) : (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#0c2b64]/10 dark:bg-[#1a56a4]/30 text-[#0c2b64] dark:text-[#38bdf8] truncate block max-w-full">
+                              📷 Dokumentasi: {livePlace?.photoUrl ? 'Google Maps' : dest.sumberGambar}
+                            </span>
+                          )}
                         </div>
                       </div>
 
                       {/* Footer Actions */}
                       <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                        <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate max-w-[150px]">
+                        <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate max-w-[140px]">
                           {dest.aktivitas.slice(0, 32)}...
                         </span>
                         <div className="flex items-center gap-1.5">
+                          {dest.googleMapsReviewUrl && (
+                            <a
+                              href={dest.googleMapsReviewUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="p-2 rounded-xl bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 dark:bg-amber-400/15 dark:text-amber-300 dark:hover:bg-amber-400/25 transition"
+                              title="Lihat Ulasan Google Maps"
+                            >
+                              <MessageSquare className="w-4 h-4" />
+                            </a>
+                          )}
                           <a
-                            href={dest.googleMapsUrl}
+                            href={livePlace?.googleMapsUri || dest.googleMapsUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
@@ -337,10 +485,24 @@ export const WisataView: React.FC<WisataViewProps> = () => {
                 );
               })}
             </div>
+
+            {filteredDestinations.length > visibleCount && (
+              <div className="flex justify-center pt-4">
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((prev) => prev + 12)}
+                  className="min-h-[44px] px-6 py-3 rounded-2xl bg-[#0c2b64] hover:bg-[#164b91] text-white text-xs sm:text-sm font-bold shadow-md transition cursor-pointer"
+                >
+                  Tampilkan Destinasi Lainnya
+                </button>
+              </div>
+            )}
+            </>
+            )}
           </div>
         )}
 
-        {/* ================= TAB 2: 20 PAKET SIP ITINERARY ================= */}
+        {/* ================= TAB 2: PAKET SIP ITINERARY ================= */}
         {activeTab === 'itinerary' && (
           <div className="mt-8 space-y-8">
             {/* Banner Itinerary */}
@@ -353,12 +515,12 @@ export const WisataView: React.FC<WisataViewProps> = () => {
                   Itinerary SIP: Rencana Perjalanan Harian Terpadu
                 </h2>
                 <p className="text-sm sm:text-base text-blue-100 leading-relaxed">
-                  Setiap paket dirancang tepat untuk perjalanan 1 hari penuh (pukul 08.00 - 17.30 WIB) dengan rute geografis searah efisien: 3 Destinasi Utama (Alam, Religi/Sejarah, Budaya) + 1 Titik Kuliner Legendaris Pati.
+                  Setiap paket dirancang tepat untuk perjalanan 1 hari penuh (pukul 08.00 - 17.30 WIB) dengan rute geografis searah efisien: Destinasi Wisata Utama (Alam, Religi/Sejarah, Budaya) dan Kuliner Legendaris Pati.
                 </p>
                 <div className="pt-1 flex flex-wrap items-center gap-3">
                   <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/15 backdrop-blur border border-white/20 text-xs font-semibold text-white">
                     <Sparkles className="w-4 h-4 text-[#fbbf24]" />
-                    <span>Terdiri dari 20 Variasi Rute Lengkap Se-Kabupaten Pati</span>
+                    <span>Rute Perjalanan Terpadu Se-Kabupaten Pati</span>
                   </div>
                 </div>
               </div>
@@ -451,19 +613,23 @@ export const WisataView: React.FC<WisataViewProps> = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-fadeIn">
           <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden max-h-[90vh] flex flex-col">
             <div className="relative aspect-16/9 w-full bg-slate-100 dark:bg-slate-800">
-              <img
-                src={selectedDestDetail.imageUrl}
+              <GooglePlaceImage
+                query={`${selectedDestDetail.nama} ${selectedDestDetail.kecamatan} Pati`}
                 alt={selectedDestDetail.nama}
+                fallbackUrl={selectedDestDetail.imageUrl}
+                lat={selectedDestDetail.lat}
+                lng={selectedDestDetail.lng}
+                eager={true}
                 className="w-full h-full object-cover"
               />
               <button
                 type="button"
                 onClick={() => setSelectedDestDetail(null)}
-                className="absolute top-4 right-4 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 transition"
+                className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 transition"
               >
                 ✕
               </button>
-              <div className="absolute bottom-3 left-4 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-[#0c2b64] text-white border border-[#38bdf8]/30">
+              <div className="absolute bottom-3 left-4 z-20 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-[#0c2b64] text-white border border-[#38bdf8]/30">
                 {selectedDestDetail.kategoriLabel}
               </div>
             </div>
@@ -485,7 +651,19 @@ export const WisataView: React.FC<WisataViewProps> = () => {
                   <Sparkles className="w-4 h-4 text-[#1a56a4] dark:text-[#38bdf8] shrink-0" />
                   <span className="text-slate-700 dark:text-slate-300 font-medium">Sumber Data & Dokumentasi Resmi:</span>
                 </div>
-                <span className="font-bold text-[#0c2b64] dark:text-[#38bdf8]">{selectedDestDetail.sumberGambar}</span>
+                {selectedDestDetail.googleMapsPhotoUrl ? (
+                  <a
+                    href={selectedDestDetail.googleMapsPhotoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-bold text-[#0c2b64] dark:text-[#38bdf8] hover:underline inline-flex items-center gap-1"
+                  >
+                    <span>{selectedDestDetail.sumberGambar}</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                ) : (
+                  <span className="font-bold text-[#0c2b64] dark:text-[#38bdf8]">{selectedDestDetail.sumberGambar}</span>
+                )}
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 text-xs">
@@ -536,16 +714,27 @@ export const WisataView: React.FC<WisataViewProps> = () => {
                 </div>
               )}
 
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-3">
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-2.5">
                 <a
                   href={selectedDestDetail.googleMapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#0c2b64] hover:bg-[#164b91] text-white font-bold text-xs sm:text-sm shadow-md transition border border-[#38bdf8]/30"
+                  className="flex-1 min-w-[200px] flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#0c2b64] hover:bg-[#164b91] text-white font-bold text-xs sm:text-sm shadow-md transition border border-[#38bdf8]/30"
                 >
                   <ExternalLink className="w-4 h-4 text-[#38bdf8]" />
                   <span>Petunjuk Arah Google Maps</span>
                 </a>
+                {selectedDestDetail.googleMapsReviewUrl && (
+                  <a
+                    href={selectedDestDetail.googleMapsReviewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-1.5 py-3 px-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-xs font-bold transition"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span>Ulasan Google Maps</span>
+                  </a>
+                )}
                 <button
                   type="button"
                   onClick={() => handleShare(selectedDestDetail.nama, selectedDestDetail.googleMapsUrl)}

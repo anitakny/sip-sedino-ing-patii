@@ -31,7 +31,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
-              <strong>Sedina ing Pati (SIP)</strong> adalah inisiatif program advokasi pariwisata 1 hari terpadu, direktori 135 destinasi, dan etalase ekonomi kreatif (Ekraf) Kabupaten Pati, Jawa Tengah.
+              <strong>Sedina ing Pati (SIP)</strong> adalah inisiatif program advokasi pariwisata 1 hari terpadu, direktori destinasi, dan etalase ekonomi kreatif (Ekraf) Kabupaten Pati, Jawa Tengah.
             </p>
             <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
               <ShieldCheck className="w-4 h-4" />
@@ -60,7 +60,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   onClick={() => onNavigate('wisata')}
                   className="hover:text-[#0c2b64] dark:hover:text-[#38bdf8] transition"
                 >
-                  135 Destinasi & Itinerary SIP
+                  Destinasi &amp; Itinerary SIP
                 </button>
               </li>
               <li>
@@ -104,7 +104,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 onClick={() => onNavigate('wisata')}
                 className="w-full text-left p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 transition block font-medium"
               >
-                🗺️ 135 Destinasi & Peta Lengkap
+                🗺️ Destinasi &amp; Peta Lengkap
               </button>
 
               <button

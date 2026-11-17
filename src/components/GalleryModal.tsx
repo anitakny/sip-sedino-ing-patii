@@ -59,6 +59,7 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({
             <img
               src={item.url}
               alt={item.judul}
+              referrerPolicy="no-referrer"
               className="max-h-[75vh] w-full object-contain select-none"
             />
           )}

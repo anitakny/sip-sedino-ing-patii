@@ -8,7 +8,8 @@ import {
   X,
   UserCheck,
   Sparkles,
-  MapPin
+  MapPin,
+  ExternalLink
 } from 'lucide-react';
 import { ReviewItem } from '../types';
 import confetti from 'canvas-confetti';
@@ -33,6 +34,7 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
   const [formKomentar, setFormKomentar] = useState('');
   const [formRekomendasi, setFormRekomendasi] = useState(true);
   const [formSuccess, setFormSuccess] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Calculate average rating
   const avgRating = (
@@ -48,7 +50,15 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formNama.trim() || !formKomentar.trim()) return;
+    setFormError(null);
+    if (!formNama.trim()) {
+      setFormError('Mohon isi nama Anda terlebih dahulu.');
+      return;
+    }
+    if (formKomentar.trim().length < 10) {
+      setFormError('Mohon tuliskan pengalaman perjalanan minimal 10 karakter.');
+      return;
+    }
 
     const newRev: ReviewItem = {
       id: `rev-${Date.now()}`,
@@ -95,15 +105,18 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
               Ulasan Pengunjung <span className="text-transparent bg-clip-text bg-linear-to-r from-[#0c2b64] via-[#1a56a4] to-[#2575fc] dark:from-[#38bdf8] dark:to-[#60a5fa]">Sedina ing Pati</span>
             </h2>
-            <p className="mt-1 text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl font-normal">
+            <p className="mt-1 text-sm sm:text-base text-slate-700 dark:text-slate-300 max-w-2xl font-normal">
               Pengalaman nyata para pelancong, pecinta kuliner, dan pemerhati budaya yang telah merasakan efisiensi itinerary harian di Kabupaten Pati.
             </p>
           </div>
 
           <button
             type="button"
-            onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0c2b64] hover:bg-[#164b91] text-white text-xs sm:text-sm font-bold shadow-md shadow-[#0c2b64]/30 transition-all hover:scale-105 border border-[#38bdf8]/30"
+            onClick={() => {
+              setFormError(null);
+              setIsModalOpen(true);
+            }}
+            className="min-h-[44px] inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0c2b64] hover:bg-[#164b91] text-white text-xs sm:text-sm font-bold shadow-md shadow-[#0c2b64]/30 transition-all hover:scale-105 border border-[#38bdf8]/30 cursor-pointer"
           >
             <PlusCircle className="w-4 h-4 text-[#38bdf8]" />
             <span>Tulis Ulasan Anda</span>
@@ -115,14 +128,14 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
           {/* Average Rating (4 Cols) */}
           <div className="md:col-span-4 text-center md:text-left md:border-r border-slate-200 dark:border-slate-700/60 md:pr-6 space-y-2">
             <div className="text-5xl font-black text-slate-900 dark:text-white">
-              {avgRating} <span className="text-2xl font-bold text-slate-400">/ 5.0</span>
+              {avgRating} <span className="text-2xl font-bold text-slate-500 dark:text-slate-300">/ 5.0</span>
             </div>
             <div className="flex items-center justify-center md:justify-start gap-1 text-amber-500">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="w-5 h-5 fill-current" />
               ))}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-700 dark:text-slate-300">
               Berdasarkan <strong>{reviews.length} ulasan terverifikasi</strong> wisatawan
             </p>
           </div>
@@ -130,19 +143,19 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
           {/* Highlights (8 Cols) */}
           <div className="md:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center sm:text-left">
             <div className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-              <span className="text-xs text-slate-500 dark:text-slate-400 block">Tingkat Kepuasan</span>
-              <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">98.4% Positif</span>
-              <span className="text-[11px] text-slate-400 block mt-0.5">Rute efisien & hemat</span>
+              <span className="text-xs text-slate-600 dark:text-slate-300 font-medium block">Tingkat Kepuasan</span>
+              <span className="text-lg font-bold text-emerald-700 dark:text-emerald-400">98.4% Positif</span>
+              <span className="text-[11px] text-slate-600 dark:text-slate-300 block mt-0.5">Rute efisien & hemat</span>
             </div>
             <div className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-              <span className="text-xs text-slate-500 dark:text-slate-400 block">Akurasi Rute Maps</span>
-              <span className="text-lg font-bold text-blue-600 dark:text-blue-400">100% Valid</span>
-              <span className="text-[11px] text-slate-400 block mt-0.5">Direct link Maps</span>
+              <span className="text-xs text-slate-600 dark:text-slate-300 font-medium block">Akurasi Rute Maps</span>
+              <span className="text-lg font-bold text-blue-700 dark:text-blue-400">100% Valid</span>
+              <span className="text-[11px] text-slate-600 dark:text-slate-300 block mt-0.5">Direct link Maps</span>
             </div>
             <div className="p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-              <span className="text-xs text-slate-500 dark:text-slate-400 block">Navigasi Presisi</span>
-              <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">135 Titik</span>
-              <span className="text-[11px] text-slate-400 block mt-0.5">Google Maps siap pakai</span>
+              <span className="text-xs text-slate-600 dark:text-slate-300 font-medium block">Navigasi Presisi</span>
+              <span className="text-lg font-bold text-indigo-700 dark:text-indigo-400">Terverifikasi</span>
+              <span className="text-[11px] text-slate-600 dark:text-slate-300 block mt-0.5">Google Maps siap pakai</span>
             </div>
           </div>
         </div>
@@ -164,6 +177,8 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                       <img
                         src={rev.avatarUrl}
                         alt={rev.nama}
+                        loading="lazy"
+                        decoding="async"
                         className="w-11 h-11 rounded-full object-cover border-2 border-blue-500/30"
                       />
                       <div>
@@ -209,9 +224,22 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                   </p>
                 </div>
 
-                {/* Footer: Date & Helpful button */}
-                <div className="pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                  <span>{rev.tanggal}</span>
+                {/* Footer: Date, Google Maps link & Helpful button */}
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-700/60 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-2.5">
+                    <span>{rev.tanggal}</span>
+                    {rev.googleMapsReviewUrl && (
+                      <a
+                        href={rev.googleMapsReviewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-semibold text-[11px] hover:underline"
+                      >
+                        <span>Ulasan Google Maps</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                  </div>
 
                   <button
                     type="button"
@@ -255,7 +283,7 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4">
+            <form onSubmit={handleSubmit} noValidate className="p-5 overflow-y-auto space-y-4">
               {formSuccess ? (
                 <div className="py-8 text-center space-y-3">
                   <div className="w-14 h-14 mx-auto rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-300 flex items-center justify-center animate-bounce">
@@ -264,12 +292,20 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                   <h4 className="font-bold text-lg text-slate-900 dark:text-white">
                     Ulasan Anda Berhasil Ditayangkan!
                   </h4>
-                  <p className="text-xs text-slate-600 dark:text-slate-300">
+                  <p className="text-xs text-slate-700 dark:text-slate-300">
                     Terima kasih telah berbagi pengalaman otentik perjalanan Anda di Kabupaten Pati.
                   </p>
                 </div>
               ) : (
                 <>
+                  {formError && (
+                    <div
+                      role="alert"
+                      className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-xs font-semibold"
+                    >
+                      {formError}
+                    </div>
+                  )}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">

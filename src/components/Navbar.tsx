@@ -51,7 +51,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 SIP<span className="text-[#1a56a4] dark:text-[#38bdf8]">PATI</span>
               </span>
             </div>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium tracking-wide">
+            <p className="text-[11px] text-slate-600 dark:text-slate-300 font-medium tracking-wide">
               Sedina ing Pati & Ekraf
             </p>
           </div>
@@ -67,13 +67,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 key={item.id}
                 type="button"
                 onClick={() => handleNavClick(item.id)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                className={`min-h-[38px] flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   isActive
                     ? 'bg-[#0c2b64] text-white shadow-md'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-[#0c2b64] dark:hover:text-[#38bdf8] hover:bg-white dark:hover:bg-slate-700'
+                    : 'text-slate-700 dark:text-slate-200 hover:text-[#0c2b64] dark:hover:text-[#38bdf8] hover:bg-white dark:hover:bg-slate-700'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#38bdf8]' : 'text-slate-400'}`} />
+                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#38bdf8]' : 'text-slate-600 dark:text-slate-300'}`} />
                 <span>{item.label}</span>
               </button>
             );
@@ -86,7 +86,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition"
+            className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center p-2.5 rounded-xl text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 transition"
             aria-label="Menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -105,17 +105,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                 key={item.id}
                 type="button"
                 onClick={() => handleNavClick(item.id)}
-                className={`w-full flex items-center justify-between p-3 rounded-xl text-xs font-bold transition ${
+                className={`w-full min-h-[46px] flex items-center justify-between p-3 rounded-xl text-sm font-bold transition ${
                   isActive
                     ? 'bg-[#0c2b64] text-white'
-                    : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    : 'text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <Icon className="w-4 h-4" />
                   <span>{item.label}</span>
                 </div>
-                {isActive && <span className="text-[10px] uppercase font-bold">Aktif</span>}
+                {isActive && <span className="text-[11px] uppercase font-bold">Aktif</span>}
               </button>
             );
           })}

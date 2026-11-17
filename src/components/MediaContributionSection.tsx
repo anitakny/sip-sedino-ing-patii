@@ -39,10 +39,11 @@ export const MediaContributionSection: React.FC<MediaContributionSectionProps> =
   const [formKeterangan, setFormKeterangan] = useState('');
   const [formTags, setFormTags] = useState('PatiWisata, SedinaIngPati');
   const [formSuccess, setFormSuccess] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Preset sample pictures so users can easily try 1-click photo demo
   const samplePictures = [
-    { label: 'Waduk Seloromo Sunset', url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80' },
+    { label: 'Waduk Seloromo Sunset', url: 'https://lh3.googleusercontent.com/grass-cs/AABkmLd4oP3kX9UW5WMLphoqM2Q4HkWtWDAG-Zxb2-1fEvSSfAEBJjIjJBBJ5yuRNe9aqKKC4-62I8WowtEDtfpaeG8jUcqKSnHJ0HTLMVElzZAvJnM4PgJlHMSU5mO0gskVtNtg0kWpBFFIpPzR=w1200-h800-k-no' },
     { label: 'Batik Bakaran Juwana', url: 'https://images.unsplash.com/photo-1607344645866-009c320c5ab8?auto=format&fit=crop&w=1200&q=80' },
     { label: 'Kuliner Gandul Pati', url: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80' },
     { label: 'Kebun Kopi Jolong Muria', url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1200&q=80' }
@@ -71,7 +72,19 @@ export const MediaContributionSection: React.FC<MediaContributionSectionProps> =
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formJudul.trim() || !formUrl.trim() || !formPenulis.trim()) return;
+    setFormError(null);
+    if (!formJudul.trim()) {
+      setFormError('Mohon isi judul dokumentasi terlebih dahulu.');
+      return;
+    }
+    if (!formUrl.trim()) {
+      setFormError('Mohon masukkan tautan foto/video atau unggah berkas gambar.');
+      return;
+    }
+    if (!formPenulis.trim()) {
+      setFormError('Mohon isi nama kontributor Anda.');
+      return;
+    }
 
     const newMedia: MediaItem = {
       id: `media-user-${Date.now()}`,
@@ -132,7 +145,7 @@ export const MediaContributionSection: React.FC<MediaContributionSectionProps> =
             <h2 className="mt-2 text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
               Cerita & Dokumentasi <span className="text-transparent bg-clip-text bg-linear-to-r from-[#0c2b64] via-[#1a56a4] to-[#2575fc] dark:from-[#38bdf8] dark:to-[#60a5fa]">Sedina ing Pati</span>
             </h2>
-            <p className="mt-1 text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl font-normal">
+            <p className="mt-1 text-sm sm:text-base text-slate-700 dark:text-slate-300 max-w-2xl font-normal">
               Abadikan momen indah liburan Anda di Bumi Mina Tani. Bagikan foto atau video petualangan Anda dan klik galeri untuk memperbesar resolusi tinggi.
             </p>
           </div>
@@ -144,10 +157,10 @@ export const MediaContributionSection: React.FC<MediaContributionSectionProps> =
               <button
                 type="button"
                 onClick={() => setFilterType('all')}
-                className={`px-3 py-1.5 rounded-lg transition ${
+                className={`min-h-[40px] px-3 py-1.5 rounded-lg transition cursor-pointer ${
                   filterType === 'all'
                     ? 'bg-[#0c2b64] text-white font-bold shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 Semua ({mediaList.length})
@@ -155,10 +168,10 @@ export const MediaContributionSection: React.FC<MediaContributionSectionProps> =
               <button
                 type="button"
                 onClick={() => setFilterType('foto')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition ${
+                className={`min-h-[40px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition cursor-pointer ${
                   filterType === 'foto'
                     ? 'bg-[#0c2b64] text-white font-bold shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <Camera className="w-3.5 h-3.5" />
@@ -167,10 +180,10 @@ export const MediaContributionSection: React.FC<MediaContributionSectionProps> =
               <button
                 type="button"
                 onClick={() => setFilterType('video')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition ${
+                className={`min-h-[40px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition cursor-pointer ${
                   filterType === 'video'
                     ? 'bg-[#0c2b64] text-white font-bold shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <Video className="w-3.5 h-3.5" />
@@ -181,8 +194,11 @@ export const MediaContributionSection: React.FC<MediaContributionSectionProps> =
             {/* Add Media Button */}
             <button
               type="button"
-              onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0c2b64] hover:bg-[#164b91] text-white text-xs sm:text-sm font-bold shadow-md shadow-[#0c2b64]/30 transition-all hover:scale-[1.02] active:scale-[0.98] border border-[#38bdf8]/30"
+              onClick={() => {
+                setFormError(null);
+                setIsModalOpen(true);
+              }}
+              className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0c2b64] hover:bg-[#164b91] text-white text-xs sm:text-sm font-bold shadow-md shadow-[#0c2b64]/30 transition-all hover:scale-[1.02] active:scale-[0.98] border border-[#38bdf8]/30 cursor-pointer"
             >
               <PlusCircle className="w-4 h-4 text-[#38bdf8]" />
               <span>Tambah Foto / Video</span>
@@ -207,8 +223,10 @@ export const MediaContributionSection: React.FC<MediaContributionSectionProps> =
                   <img
                     src={item.thumbnailUrl || item.url}
                     alt={item.judul}
+                    referrerPolicy="no-referrer"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
+                    decoding="async"
                   />
 
                   {/* Gradient Overlay */}
@@ -323,7 +341,7 @@ export const MediaContributionSection: React.FC<MediaContributionSectionProps> =
             </div>
 
             {/* Modal Form */}
-            <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4">
+            <form onSubmit={handleSubmit} noValidate className="p-5 overflow-y-auto space-y-4">
               {formSuccess ? (
                 <div className="py-8 text-center space-y-3">
                   <div className="w-14 h-14 mx-auto rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-300 flex items-center justify-center animate-bounce">
@@ -332,12 +350,20 @@ export const MediaContributionSection: React.FC<MediaContributionSectionProps> =
                   <h4 className="font-bold text-lg text-slate-900 dark:text-white">
                     Berhasil Ditambahkan!
                   </h4>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 max-w-xs mx-auto">
+                  <p className="text-xs text-slate-700 dark:text-slate-300 max-w-xs mx-auto">
                     Dokumentasi Anda telah tayang di galeri utama Sedina ing Pati. Terima kasih atas kontribusi Anda!
                   </p>
                 </div>
               ) : (
                 <>
+                  {formError && (
+                    <div
+                      role="alert"
+                      className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-xs font-semibold"
+                    >
+                      {formError}
+                    </div>
+                  )}
                   {/* Media Type Selector */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
