@@ -33,7 +33,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis',
         aktivitas: 'Ziarah sejarah ulama tua pendiri desa & babad Pati',
         travelTime: '± 25 menit',
-        mapsUrl: 'https://maps.app.goo.gl/0lL3XeL1dDdH1oeO9'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Makam%20Ki%20Ageng%20Majasemi%2C%20Mojosemi%2C%20Pati%20Kota%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '13:15 - 14:30',
@@ -43,7 +43,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Rp 15k - 30k',
         aktivitas: 'Makan siang kuliner ikonik Pati berkuah santan gurih & potongan daging sapi empuk beralas daun pisang',
         travelTime: '± 10 menit',
-        mapsUrl: 'https://maps.app.goo.gl/gajahmatigandul1'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Nasi%20Gandul%20H.%20Gajah%2C%20Gajahmati%2C%20Pati%20Kota%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '15:00 - 17:00',
@@ -74,7 +74,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Rp 5.000',
         aktivitas: 'Eksplorasi gua karst, stalaktit aktif, sungai bawah tanah, & wahana bebek air',
         travelTime: 'Start Pagi',
-        mapsUrl: 'https://maps.app.goo.gl/4dU6QlB4wWwA4hyH2'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Gua%20Pancur%2C%20Jimbaran%2C%20Kayen%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '11:00 - 12:30',
@@ -84,7 +84,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis',
         aktivitas: 'Ziarah religi & mempelajari keteladanan spiritual Syekh Jangkung',
         travelTime: '± 15 menit',
-        mapsUrl: 'https://maps.app.goo.gl/6dE5PwD3vVvZ3gwG1'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Makam%20Syekh%20Jangkung%2C%20Landoh%2C%20Kayen%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '13:00 - 14:30',
@@ -94,7 +94,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Rp 8k - 15k',
         aktivitas: 'Makan siang gulai nangka muda kuah santan pedas beralas daun jati otentik',
         travelTime: '± 20 menit',
-        mapsUrl: 'https://maps.app.goo.gl/segotewel22'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Sego%20Tewel%20Tambakromo%2C%20Tambakromo%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '15:00 - 17:00',
@@ -104,7 +104,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis',
         aktivitas: 'Napak tilas kebudayaan & sejarah peranan wanita dalam babad Pati',
         travelTime: '± 10 menit',
-        mapsUrl: 'https://maps.app.goo.gl/3fF9RyF7xXxB7iyI5'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Petilasan%20Nyai%20Ageng%20Ngerang%2C%20Tambakromo%2C%20Pati%2C%20Jawa%20Tengah'
       }
     ]
   },
@@ -125,7 +125,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis',
         aktivitas: 'Belajar membatik motif kuno Sigar Penjalin & keliling kampung batik pesisir',
         travelTime: 'Start Pagi',
-        mapsUrl: 'https://maps.app.goo.gl/2rR7DkR5jJjN5ukU3'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Sentra%20Batik%20Bakaran%2C%20Bakaran%2C%20Juwana%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '11:00 - 12:30',
@@ -135,7 +135,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis',
         aktivitas: 'Wisata sejarah arsitektur klenteng kuno muara pesisir Juwana',
         travelTime: '± 15 menit',
-        mapsUrl: 'https://maps.app.goo.gl/7cD1PwD9vVvZ9gwG7'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Kelenteng%20Tjoe%20Tik%20Bio%20Juwana%2C%20Juwana%20Kota%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '12:45 - 14:30',
@@ -145,7 +145,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Rp 35k - 90k',
         aktivitas: 'Makan siang kuliner kepala ikan ndas manyung asap super pedas fenomenal',
         travelTime: '± 5 menit',
-        mapsUrl: 'https://maps.app.goo.gl/bufatmanyung20'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Mangut%20Kepala%20Manyung%20Bu%20Fat%2C%20Juwana%20Kota%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '15:00 - 17:00',
@@ -155,7 +155,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis',
         aktivitas: 'Foto di monumen bandeng raksasa ikonik & menikmati angin sore muara sungai',
         travelTime: '± 10 menit',
-        mapsUrl: 'https://maps.app.goo.gl/2qP7BiX5hHhL5siS3'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Monumen%20Bandeng%20%26%20Muara%20Juwana%2C%20Juwana%20Kota%2C%20Pati%2C%20Jawa%20Tengah'
       }
     ]
   },
@@ -176,7 +176,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Rp 5.000',
         aktivitas: 'Trekking hijau & menikmati keasrian air terjun alami lereng Muria',
         travelTime: 'Start Pagi',
-        mapsUrl: 'https://maps.app.goo.gl/9xK2LmN7yPqR3bsB8'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Air%20Terjun%20Grenjengan%20Sewu%2C%20Jrahi%2C%20Gunungwungkal%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '11:00 - 12:30',
@@ -186,7 +186,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis',
         aktivitas: 'Wisata spiritual & meditasi dengan panorama bukit yang menenangkan',
         travelTime: '± 10 menit',
-        mapsUrl: 'https://maps.app.goo.gl/7hI1TaF9zZzD9kaK7'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Vihara%20Bodhi%20Giri%2C%20Jrahi%2C%20Gunungwungkal%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '13:30 - 14:45',
@@ -196,7 +196,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Rp 10k - 20k',
         aktivitas: 'Makan siang Soto Kemiri kuah kuning gurih rempah kemiri dengan suwiran ayam',
         travelTime: '± 45 menit',
-        mapsUrl: 'https://maps.app.goo.gl/mankemiri12'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Soto%20Kemiri%20Pak%20Man%2C%20Pati%20Kota%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '15:00 - 17:00',
@@ -206,7 +206,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis',
         aktivitas: 'Edukasi kerukunan umat 5 agama, tradisi kebun kopi, & budaya lokal',
         travelTime: '± 45 menit',
-        mapsUrl: 'https://maps.app.goo.gl/5oO0AhO8gGgK8rhR6'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Desa%20Wisata%20Jrahi%2C%20Jrahi%2C%20Gunungwungkal%2C%20Pati%2C%20Jawa%20Tengah'
       }
     ]
   },
@@ -227,7 +227,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Rp 3.000',
         aktivitas: 'Melihat cagar budaya pintu jati kuno Majapahit & legenda Sunan Muria',
         travelTime: 'Start Pagi',
-        mapsUrl: 'https://maps.app.goo.gl/3uL9HyS7nNnR7yoY5'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Pintu%20Gerbang%20Majapahit%2C%20Muktiharjo%2C%20Margorejo%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '10:45 - 12:15',
@@ -237,7 +237,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Rp 5.000',
         aktivitas: 'Menikmati mata air jernih peninggalan Sunan Kalijaga & pohon tua rindang',
         travelTime: '± 15 menit',
-        mapsUrl: 'https://maps.app.goo.gl/7sJ1FwQ9lLlP9wmW7'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Mata%20Air%20Sendang%20Sani%2C%20Tamansari%2C%20Tlogowungu%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '12:30 - 14:00',
@@ -247,7 +247,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Rp 15k - 30k',
         aktivitas: 'Makan siang Nasi Gandul lauk kikil/daging empuk & tempe goreng renyah',
         travelTime: '± 15 menit',
-        mapsUrl: 'https://maps.app.goo.gl/warsomangandul5'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Nasi%20Gandul%20Pak%20Warsoman%2C%20Mayor%20Kusmanto%2C%20Pati%20Kota%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '14:30 - 17:00',
@@ -257,7 +257,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis',
         aktivitas: 'Ziarah sejarah asal mula Kadipaten Pesantenan cikal bakal Kota Pati',
         travelTime: '± 10 menit',
-        mapsUrl: 'https://maps.app.goo.gl/2hH7TaH5zZzD5kaK3'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Situs%20Genuk%20Kemiri%2C%20Kalidoro%2C%20Pati%20Kota%2C%20Pati%2C%20Jawa%20Tengah'
       }
     ]
   },
@@ -278,7 +278,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Rp 3.000',
         aktivitas: 'Menelusuri jembatan kayu konservasi hutan mangrove & panorama pesisir',
         travelTime: 'Start Pagi',
-        mapsUrl: 'https://maps.app.goo.gl/9hY2UlF0aAaE0lcL8'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Pantai%20Kertomulyo%20Mangrove%2C%20Kertomulyo%2C%20Trangkil%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '11:00 - 12:30',
@@ -288,7 +288,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis',
         aktivitas: 'Foto arsitektur industri kolonial Belanda tahun 1835 yang megah',
         travelTime: '± 10 menit',
-        mapsUrl: 'https://maps.app.goo.gl/1vM8IzT6oOoS6zpZ4'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Pabrik%20Gula%20Trangkil%2C%20Trangkil%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '13:00 - 15:00',
@@ -298,7 +298,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Rp 15k - 100k',
         aktivitas: 'Makan siang masakan khas Jawa & belanja oleh-oleh Dua Kelinci super lengkap',
         travelTime: '± 25 menit',
-        mapsUrl: 'https://maps.app.goo.gl/waroengpati19'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Waroeng%20Pati%2C%20Margorejo%2C%20Pati%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '15:30 - 17:30',
@@ -308,7 +308,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis',
         aktivitas: 'Ibadah & menikmati keindahan arsitektur masjid utama di jantung kota',
         travelTime: '± 15 menit',
-        mapsUrl: 'https://maps.app.goo.gl/9gH2SzG0yYyC0jzJ8'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Masjid%20Agung%20Baitunnur%20Pati%2C%20Alun-Alun%20Pati%2C%20Pati%2C%20Jawa%20Tengah'
       }
     ]
   },
@@ -329,7 +329,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis',
         aktivitas: 'Diskusi kebudayaan, belajar kearifan lokal faham Samin & kejujuran alam',
         travelTime: 'Start Pagi',
-        mapsUrl: 'https://maps.app.goo.gl/7xX1JqX9pPpT9aqA7'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Komunitas%20Adat%20Sedulur%20Sikep%2C%20Karangrowo%2C%20Sukolilo%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '10:45 - 12:30',
@@ -339,7 +339,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis / Parkir',
         aktivitas: 'Mandi di mata air jernih pegunungan Kendeng yang tak pernah surut',
         travelTime: '± 15 menit',
-        mapsUrl: 'https://maps.app.goo.gl/6eV5RkC3xXxB3izI1'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Gua%20Wareh%2C%20Kedumulyo%2C%20Sukolilo%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '12:45 - 14:00',
@@ -349,7 +349,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis',
         aktivitas: 'Ziarah sejarah pahlawan irigasi kuno pegunungan Kendeng',
         travelTime: '± 10 menit',
-        mapsUrl: 'https://maps.app.goo.gl/8zA4MzA2sSsW2dtD0'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Petilasan%20Menak%20Sopal%2C%20Sukolilo%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '14:45 - 16:30',
@@ -359,7 +359,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Rp 10k - 20k',
         aktivitas: 'Santap sore petis balungan kambing khas berkuah santan tepung beras sangrai',
         travelTime: '± 35 menit',
-        mapsUrl: 'https://maps.app.goo.gl/petisrunting25'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Petis%20Runting%20Mbah%20Yanti%2C%20Runting%2C%20Pati%20Kota%2C%20Pati%2C%20Jawa%20Tengah'
       }
     ]
   },
@@ -380,7 +380,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Rp 10.000',
         aktivitas: 'Keliling kebun kopi kolonial Belanda, terapi ikan, & foto rumah pohon',
         travelTime: 'Start Pagi',
-        mapsUrl: 'https://maps.app.goo.gl/8yY4KrO2qQqU2brB0'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Agrowisata%20Jolong%201%2C%20Sitiluhur%2C%20Gembong%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '11:30 - 13:00',
@@ -390,7 +390,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Sesuai Jajan',
         aktivitas: 'Minum kopi robusta asli Jolong & foto arsitektur rustic kebun tua',
         travelTime: '± 10 menit',
-        mapsUrl: 'https://maps.app.goo.gl/kopijolong30'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Omah%20Kopi%20Jolong%20Heritage%2C%20Gembong%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '13:45 - 15:00',
@@ -400,7 +400,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Rp 10k - 18k',
         aktivitas: 'Makan siang Soto Kemiri resep tertua di desa asalnya lengkap dengan uritan',
         travelTime: '± 40 menit',
-        mapsUrl: 'https://maps.app.goo.gl/utomokemiri11'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Soto%20Kemiri%20Pak%20Utomo%2C%20Kemiri%2C%20Pati%20Kota%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '15:30 - 17:30',
@@ -410,7 +410,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis',
         aktivitas: 'Ziarah spiritual kompleks waliyullah penyebar Islam perbukitan Kendeng',
         travelTime: '± 30 menit',
-        mapsUrl: 'https://maps.app.goo.gl/0fG3RyF1xXxB1iyI9'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Makam%20Ki%20Ageng%20Ngerang%2C%20Tambakromo%2C%20Pati%2C%20Jawa%20Tengah'
       }
     ]
   },
@@ -431,7 +431,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Rp 5.000',
         aktivitas: 'Berenang di kolam alami & perosotan air di tebing batu bertingkat',
         travelTime: 'Start Pagi',
-        mapsUrl: 'https://maps.app.goo.gl/7yN3KmP5xQrS2ctC9'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Air%20Terjun%20Lorodan%20Semar%2C%20Sumbersari%2C%20Kayen%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '11:00 - 12:30',
@@ -441,7 +441,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis',
         aktivitas: 'Melihat proses pengecoran logam kuningan & tembaga hiasan rumah',
         travelTime: '± 25 menit',
-        mapsUrl: 'https://maps.app.goo.gl/1qQ8CjQ6iIiM6tjT4'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Sentra%20Kerajinan%20Kuningan%2C%20Juwana%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '12:45 - 14:15',
@@ -451,7 +451,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Rp 30k - 85k',
         aktivitas: 'Makan siang restoran spesialis mangut kepala ikan ndas manyung asap pedas',
         travelTime: '± 10 menit',
-        mapsUrl: 'https://maps.app.goo.gl/istanamanyung21'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Mangut%20Kepala%20Manyung%20Istana%2C%20Raya%20Juwana-Pati%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '14:45 - 16:45',
@@ -461,7 +461,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis',
         aktivitas: 'Piknik tepi sungai tebing cadas & melihat petilasan sejarah sekitar',
         travelTime: '± 25 menit',
-        mapsUrl: 'https://maps.app.goo.gl/5zP1LnQ4wRtU8duD6'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Air%20Terjun%20Tadah%20Hujan%20%26%20Petilasan%2C%20Sukolilo%2C%20Pati%2C%20Jawa%20Tengah'
       }
     ]
   },
@@ -482,7 +482,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis / Petik',
         aktivitas: 'Petik jeruk Pamelo raksasa manis langsung dari pohon perkebunan Bageng',
         travelTime: 'Start Pagi',
-        mapsUrl: 'https://maps.app.goo.gl/3pP9BiP7hHhL7siS5'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Desa%20Wisata%20Bageng%2C%20Bageng%2C%20Gembong%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '11:00 - 12:30',
@@ -492,7 +492,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis Masuk',
         aktivitas: 'Hiburan perbelanjaan modern indoor & wahana cinema kota Pati',
         travelTime: '± 30 menit',
-        mapsUrl: 'https://maps.app.goo.gl/4rQ6CjW4iIiM4tjT2'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Plaza%20Pati%20%26%20Cinema%2C%20Pusat%20Kota%20Pati%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '12:45 - 14:15',
@@ -502,7 +502,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Rp 15k - 30k',
         aktivitas: 'Makan siang Nasi Gandul lauk limpa & otak sapi segar perasan jeruk nipis',
         travelTime: '± 5 menit',
-        mapsUrl: 'https://maps.app.goo.gl/ronggogandul9'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Nasi%20Gandul%20Pak%20H.%20Ronggo%2C%20Jl.%20Kembang%2C%20Pati%20Kota%2C%20Pati%2C%20Jawa%20Tengah'
       },
       {
         waktu: '14:45 - 17:00',
@@ -512,7 +512,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis',
         aktivitas: 'Bersantai di ruang terbuka hijau kota bawah pepohonan rindang',
         travelTime: '± 10 menit',
-        mapsUrl: 'https://maps.app.goo.gl/3dD9PwJ7vVvZ7gwG5'
+        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Taman%20Hutan%20Kota%20Kalidoro%2C%20Kalidoro%2C%20Pati%20Kota%2C%20Pati%2C%20Jawa%20Tengah'
       }
     ]
   }

@@ -63,7 +63,7 @@ export const EKRAF_PRODUCTS: EkrafProduct[] = [
     pengrajin: 'Paguyuban Batik Tulis Bakaran Indah',
     kontakWa: '6281234567890',
     keunggulan: ['100% Canting Tulis Tangan', 'Pewarna Alami Tahan Lama', 'Sertifikat Hak Kekayaan Intelektual (HAKI)'],
-    imageUrl: 'https://images.unsplash.com/photo-1607344645866-009c320c5ab8?auto=format&fit=crop&w=800&q=80'
+    imageUrl: 'https://lh3.googleusercontent.com/grass-cs/AABkmLfXLBi5HhkmC5tvK2auHw8ClhcLmyvKym3y9zZQBe4J8d3PsCK5u4HWB4mD-4_NEm9ZkqR1KQOKucfdRXTarNbvMhAu7Qt_dJDp-DyNEfsKI6dl3g72zPsVGgCpwKXIE53te8Q3hZn1qOND=w1200-h800-k-no'
   },
   {
     id: 'ekraf-2',

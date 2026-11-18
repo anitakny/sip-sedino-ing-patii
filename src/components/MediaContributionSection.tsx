@@ -43,10 +43,10 @@ export const MediaContributionSection: React.FC<MediaContributionSectionProps> =
 
   // Preset sample pictures so users can easily try 1-click photo demo
   const samplePictures = [
-    { label: 'Waduk Seloromo Sunset', url: 'https://lh3.googleusercontent.com/grass-cs/AABkmLd4oP3kX9UW5WMLphoqM2Q4HkWtWDAG-Zxb2-1fEvSSfAEBJjIjJBBJ5yuRNe9aqKKC4-62I8WowtEDtfpaeG8jUcqKSnHJ0HTLMVElzZAvJnM4PgJlHMSU5mO0gskVtNtg0kWpBFFIpPzR=w1200-h800-k-no' },
-    { label: 'Batik Bakaran Juwana', url: 'https://images.unsplash.com/photo-1607344645866-009c320c5ab8?auto=format&fit=crop&w=1200&q=80' },
-    { label: 'Kuliner Gandul Pati', url: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80' },
-    { label: 'Kebun Kopi Jolong Muria', url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1200&q=80' }
+    { label: 'Waduk Seloromo', url: 'https://lh3.googleusercontent.com/grass-cs/AABkmLd4oP3kX9UW5WMLphoqM2Q4HkWtWDAG-Zxb2-1fEvSSfAEBJjIjJBBJ5yuRNe9aqKKC4-62I8WowtEDtfpaeG8jUcqKSnHJ0HTLMVElzZAvJnM4PgJlHMSU5mO0gskVtNtg0kWpBFFIpPzR=w1200-h800-k-no' },
+    { label: 'Gua Pancur', url: 'https://lh3.googleusercontent.com/grass-cs/AABkmLeo-Tfsy8Vucp5jcD1rR-KfUOnY0R4xnhi8f-U4YiCsvjflIyq2QIloQ7TQiZpSopAxi-grzwkUmzu3cOvYE4ZsYB7JamfvuXEIURAwy7m34dQ5iXOEoXkSdwn-Zxxw0MpF3c-R=w1200-h800-k-no' },
+    { label: 'Batik Bakaran', url: 'https://lh3.googleusercontent.com/grass-cs/AABkmLfXLBi5HhkmC5tvK2auHw8ClhcLmyvKym3y9zZQBe4J8d3PsCK5u4HWB4mD-4_NEm9ZkqR1KQOKucfdRXTarNbvMhAu7Qt_dJDp-DyNEfsKI6dl3g72zPsVGgCpwKXIE53te8Q3hZn1qOND=w1200-h800-k-no' },
+    { label: 'Alun-Alun Pati', url: 'https://lh3.googleusercontent.com/gps-cs-s/ANWiy9TXnvdRueroZ3w_PCAH_UvfqHzOvRFQVK2q6_DW-jNvi9XXbVumHWVDTvfc2OFz0q0NHOOYk7rsz-mjnanrrAzUNbDTap3kN0AFyNC5eb656ps_jKOTvjf8n8BGEB_-QzoUeZz0IQ=w1200-h800-k-no' }
   ];
 
   const handleLike = (e: React.MouseEvent, id: string) => {

@@ -212,7 +212,7 @@ export const EkrafView: React.FC<EkrafViewProps> = ({ initialProductId }) => {
           </div>
 
           <a
-            href="https://maps.app.goo.gl/4cD6OvC4uUuY4fvF2"
+            href="https://www.google.com/maps/search/?api=1&query=Pasar%20Pragolo%20Margorejo%20Pati%20Jawa%20Tengah"
             target="_blank"
             rel="noopener noreferrer"
             className="px-5 py-3 rounded-xl bg-white text-blue-900 font-bold text-xs sm:text-sm hover:bg-blue-50 shadow-md transition-all shrink-0 flex items-center gap-2"

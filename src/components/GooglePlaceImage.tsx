@@ -27,13 +27,19 @@ export const GooglePlaceImage: React.FC<GooglePlaceImageProps> = ({
   showAttribution = true,
   onPlaceLoaded,
 }) => {
+  const isDirectVerifiedPhoto = fallbackUrl.includes('googleusercontent.com');
   const containerRef = useRef<HTMLDivElement>(null);
-  const [shouldFetch, setShouldFetch] = useState<boolean>(eager);
+  const [shouldFetch, setShouldFetch] = useState<boolean>(eager && !isDirectVerifiedPhoto);
   const [placeData, setPlaceData] = useState<GooglePlacePhotoData | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(eager);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [imgError, setImgError] = useState<boolean>(false);
 
   useEffect(() => {
+    if (isDirectVerifiedPhoto) {
+      setShouldFetch(false);
+      return;
+    }
+
     if (eager) {
       setShouldFetch(true);
       return;
@@ -57,10 +63,10 @@ export const GooglePlaceImage: React.FC<GooglePlaceImageProps> = ({
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [eager, query]);
+  }, [eager, query, isDirectVerifiedPhoto]);
 
   useEffect(() => {
-    if (!shouldFetch) return;
+    if (!shouldFetch || isDirectVerifiedPhoto) return;
 
     let cancelled = false;
     setIsLoading(true);
@@ -83,7 +89,7 @@ export const GooglePlaceImage: React.FC<GooglePlaceImageProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [shouldFetch, query, lat, lng]);
+  }, [shouldFetch, query, lat, lng, isDirectVerifiedPhoto]);
 
   const activeSrc =
     !imgError && placeData?.photoUrl ? placeData.photoUrl : fallbackUrl;
