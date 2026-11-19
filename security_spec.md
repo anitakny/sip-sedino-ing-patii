@@ -20,3 +20,12 @@
 10. **Mutating `editTokenHash` on Update**: Attempting to replace `editTokenHash` -> `PERMISSION_DENIED`.
 11. **Arbitrary `helpfulCount` Jump**: Updating `helpfulCount` from `2` to `100` -> `PERMISSION_DENIED` (only `existing().helpfulCount + 1` allowed).
 12. **Reading Secret Proof Collection**: `getDoc` or `getDocs` on `/reviewProofs` -> `PERMISSION_DENIED` (`allow read: if false`).
+
+# Security Specification: Shared Gallery Documentation (`/media` & `/mediaProofs`)
+
+## 3. Media Data Invariants
+1. Every document in `/media/{mediaId}` must have `judul` (1..120), `keterangan` (1..1000), `tipe` (`foto` or `video`), safe `url` (5..450000 chars matching `https://`, `http://`, `/assets/`, or `data:image/...;base64,...`), `penulis` (1..80), `lokasi` (1..120), `tanggal` (1..40), `likes` (`int >= 0`), `editTokenHash` (64-char SHA-256 lowercase hex), and `createdAt == request.time`.
+2. Optional fields `thumbnailUrl` (safe URL <= 250000 chars) and `tags` (list <= 10 items, item <= 40 chars) are strictly validated and guarded against oversized documents (> 1 MiB) and `javascript:` XSS schemes.
+3. Initial `likes` on creation must be `0` or `1`; subsequent public updates to `likes` may only increment by exact `+1`.
+4. Deleting or editing contributor media requires an atomic batch write of matching plaintext `token` to write-only `/mediaProofs/{mediaId}`.
+

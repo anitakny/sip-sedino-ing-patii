@@ -23,11 +23,12 @@ import {
   X,
   MessageSquare
 } from 'lucide-react';
-import { Destination, ItineraryPackage } from '../types';
+import { Destination, ItineraryPackage, MediaItem } from '../types';
 import { DESTINATIONS_DATA, CATEGORIES_CONFIG, KECAMATAN_LIST } from '../data/destinationsData';
 import { PACKAGES_DATA } from '../data/packagesData';
 import { GooglePlaceImage } from './GooglePlaceImage';
 import type { GooglePlacePhotoData } from '../services/placesPhotoService';
+import { findMatchingDestination } from '../utils/destinationMediaMatcher';
 
 interface WisataViewProps {
   onOpenLightbox?: (imgUrl: string, title: string) => void;
@@ -35,13 +36,16 @@ interface WisataViewProps {
   initialCategory?: string;
   initialDestId?: number | null;
   initialPackageId?: number | null;
+  userMediaList?: MediaItem[];
 }
 
 export const WisataView: React.FC<WisataViewProps> = ({
+  onOpenLightbox,
   initialTab = 'katalog',
   initialCategory = 'all',
   initialDestId = null,
-  initialPackageId = null
+  initialPackageId = null,
+  userMediaList = []
 }) => {
   const [activeTab, setActiveTab] = useState<'katalog' | 'itinerary'>(initialTab);
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
@@ -713,6 +717,38 @@ export const WisataView: React.FC<WisataViewProps> = ({
                   </div>
                 </div>
               )}
+
+              {(() => {
+                const matchingPhotos = userMediaList.filter(
+                  (m) => findMatchingDestination(m)?.id === selectedDestDetail.id
+                );
+                if (matchingPhotos.length === 0) return null;
+                return (
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2">
+                      Dokumentasi Terbaru Wisatawan ({matchingPhotos.length})
+                    </h4>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                      {matchingPhotos.map((media) => (
+                        <button
+                          key={media.id}
+                          type="button"
+                          onClick={() => onOpenLightbox?.(media.url, media.judul)}
+                          className="group relative aspect-4/3 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 cursor-pointer"
+                          title={`${media.judul} — oleh ${media.penulis}`}
+                        >
+                          <img
+                            src={media.thumbnailUrl || media.url}
+                            alt={media.judul}
+                            referrerPolicy="no-referrer"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
 
               <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-2.5">
                 <a

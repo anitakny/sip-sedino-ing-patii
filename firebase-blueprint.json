@@ -102,6 +102,127 @@
         }
       },
       "required": ["token", "updatedAt"]
+    },
+    "Media": {
+      "title": "Media",
+      "description": "Dokumentasi foto dan video kontribusi wisatawan di galeri Cerita & Dokumentasi Sedina ing Pati.",
+      "type": "object",
+      "properties": {
+        "judul": {
+          "type": "string",
+          "description": "Judul foto atau video dokumentasi wisata.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "keterangan": {
+          "type": "string",
+          "description": "Cerita singkat atau keterangan dokumentasi.",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "tipe": {
+          "type": "string",
+          "enum": ["foto", "video"],
+          "description": "Jenis media dokumentasi (foto atau video)."
+        },
+        "url": {
+          "type": "string",
+          "description": "Tautan gambar/video atau data URL terkompresi.",
+          "minLength": 5,
+          "maxLength": 450000
+        },
+        "thumbnailUrl": {
+          "type": "string",
+          "description": "Tautan gambar pratinjau/thumbnail opsional.",
+          "minLength": 5,
+          "maxLength": 250000
+        },
+        "penulis": {
+          "type": "string",
+          "description": "Nama wisatawan atau kontributor.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "lokasi": {
+          "type": "string",
+          "description": "Lokasi destinasi di Kabupaten Pati.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "tanggal": {
+          "type": "string",
+          "description": "Tanggal tampilan unggahan.",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "likes": {
+          "type": "integer",
+          "description": "Jumlah suka dari pengunjung."
+        },
+        "tags": {
+          "type": "array",
+          "description": "Daftar tagar singkat dokumentasi (maksimal 10 tagar).",
+          "maxItems": 10,
+          "items": {
+            "type": "string",
+            "maxLength": 40
+          }
+        },
+        "editTokenHash": {
+          "type": "string",
+          "description": "Hash SHA-256 (64 karakter hex) dari token kepemilikan kontributor.",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp server saat dokumentasi ditambahkan."
+        },
+        "editedAt": {
+          "type": "string",
+          "description": "Tanggal tampilan saat dokumentasi terakhir diedit.",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp server saat dokumentasi diperbarui."
+        }
+      },
+      "required": [
+        "judul",
+        "keterangan",
+        "tipe",
+        "url",
+        "penulis",
+        "lokasi",
+        "tanggal",
+        "likes",
+        "editTokenHash",
+        "createdAt"
+      ]
+    },
+    "MediaProof": {
+      "title": "MediaProof",
+      "description": "Dokumen tulis-saja berisi token pembuktian kontributor untuk verifikasi atomik edit atau hapus media.",
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "description": "Token rahasia kontributor (minimal 16 karakter) yang hash SHA-256-nya dicocokkan dengan editTokenHash.",
+          "minLength": 16,
+          "maxLength": 128
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp server saat aksi pembuktian dikirim."
+        }
+      },
+      "required": ["token", "updatedAt"]
     }
   },
   "firestore": {
@@ -112,6 +233,14 @@
     "/reviewProofs/{reviewId}": {
       "schema": { "$ref": "#/entities/ReviewProof" },
       "description": "Koleksi tulis-saja untuk verifikasi kepemilikan saat mengedit atau menghapus komentar."
+    },
+    "/media/{mediaId}": {
+      "schema": { "$ref": "#/entities/Media" },
+      "description": "Koleksi publik dokumentasi foto dan video wisata kontribusi pengguna Sedina ing Pati."
+    },
+    "/mediaProofs/{mediaId}": {
+      "schema": { "$ref": "#/entities/MediaProof" },
+      "description": "Koleksi tulis-saja untuk verifikasi kepemilikan saat mengedit atau menghapus media."
     }
   }
 }

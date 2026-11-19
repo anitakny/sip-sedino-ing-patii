@@ -76,7 +76,7 @@ export const EKRAF_PRODUCTS: EkrafProduct[] = [
     pengrajin: 'Koperasi Pengrajin Kuningan Juwana Sejahtera',
     kontakWa: '6281298765432',
     keunggulan: ['Kuningan Murni Mutu Ekspor', 'Custom Desain Sesuai Permintaan Arsitek', 'Finishing Coating Anti Kusam'],
-    imageUrl: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80'
+    imageUrl: 'https://rumahpengrajintembaga.com/wp-content/uploads/2025/06/IMG-20250614-WA0012-scaled.jpg'
   },
   {
     id: 'ekraf-3',
@@ -89,7 +89,7 @@ export const EKRAF_PRODUCTS: EkrafProduct[] = [
     pengrajin: 'Sentra Bandeng Mina Makmur Juwana',
     kontakWa: '6281311223344',
     keunggulan: ['Kemasan Vakum Tahan 3 Bulan', 'Bebas Bau Tanah', 'Termasuk Sambal Terasi Khas Pati'],
-    imageUrl: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80'
+    imageUrl: 'https://blue.kumparan.com/image/upload/fl_progressive,fl_lossy,c_fill,f_auto,q_auto:best,w_1200/v1602988818/rz8uilq1tdazjopxgkpr.jpg'
   },
   {
     id: 'ekraf-4',
@@ -102,7 +102,7 @@ export const EKRAF_PRODUCTS: EkrafProduct[] = [
     pengrajin: 'Mbah Ampo Warisan Leluhur',
     kontakWa: '6285223344556',
     keunggulan: ['Tanah Liat Khusus Pilihan Bebas Polutan', 'Proses Panggang Tradisional', 'Kemasan Besek Anyaman Bambu Estetik'],
-    imageUrl: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80'
+    imageUrl: 'https://lh3.googleusercontent.com/grass-cs/AABkmLdSOK-6R-cZTSs4JKZMVF06Jb0BMin_LsHEdd8Yuyv8ZhEf8pcl7AEZ88Tpivs3zMf6XRUxmBGvA3DYzeEPkXIgbvK4qXUsYyaI1Mwwjuu1qZKUIekDrdPHaaXyY9dKIpH1_Yrecg=w1200-h800-k-no'
   },
   {
     id: 'ekraf-5',
@@ -115,7 +115,7 @@ export const EKRAF_PRODUCTS: EkrafProduct[] = [
     pengrajin: 'Roastery Kopi Petani Jrahi & Jolong',
     kontakWa: '6281778899001',
     keunggulan: ['Notes Cokelat Karamel Pekat', 'Medium-Dark Roast Segar', 'Single Origin Asli Pegunungan Muria'],
-    imageUrl: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80'
+    imageUrl: 'https://static-tokodaring.tisera.id/prod/images/produk_gambar/68f398d592e1a.png'
   },
   {
     id: 'ekraf-6',
@@ -128,7 +128,7 @@ export const EKRAF_PRODUCTS: EkrafProduct[] = [
     pengrajin: 'Kelompok Tani Jeruk Pamelo Lestari',
     kontakWa: '6285712349988',
     keunggulan: ['Kaya Vitamin C & Antioksidan', 'Ukuran Jumbo 1.5 - 2.5 kg', 'Dapat Disimpan Segar Hingga 1 Bulan'],
-    imageUrl: 'https://images.unsplash.com/photo-1557800636-894a64c1696f?auto=format&fit=crop&w=800&q=80'
+    imageUrl: 'https://lh3.googleusercontent.com/grass-cs/AABkmLcbxInnjfrIv_Lk8FTWD6f8atZsZSCOgHKfN3mnvepsYNpbZ-tBNt8D_i8cMmNKFz5u5j04GeLha9InYndvDYxWA18U77wAVdf_zBDusRPp8lmc-zY9zoZctrmI2om8-AmnWYVT=w1200-h800-k-no'
   },
   {
     id: 'ekraf-7',
@@ -141,7 +141,7 @@ export const EKRAF_PRODUCTS: EkrafProduct[] = [
     pengrajin: 'Kelompok Anyam Bambu Muria Asri',
     kontakWa: '6285800112233',
     keunggulan: ['Bambu Awet Anti Rayap Alami', 'Desain Anyaman Rapi Halus', 'Zero-Plastic Packaging'],
-    imageUrl: 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=800&q=80'
+    imageUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/14/Besek_Atau_Tumbu_Dari_Bahan_Bambu_Di_Kebumen_Jateng_NKRI.jpg/1280px-Besek_Atau_Tumbu_Dari_Bahan_Bambu_Di_Kebumen_Jateng_NKRI.jpg'
   },
   {
     id: 'ekraf-8',
@@ -154,6 +154,6 @@ export const EKRAF_PRODUCTS: EkrafProduct[] = [
     pengrajin: 'Gandul Nusantara Kreatif',
     kontakWa: '6282133445566',
     keunggulan: ['Tanpa Pengawet Buatan', 'Rasa Autentik Resep Mbah Pati', 'Telah Uji Sertifikasi Halal'],
-    imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80'
+    imageUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9c/Nasi_Gandul_2.jpg/1280px-Nasi_Gandul_2.jpg'
   }
 ];

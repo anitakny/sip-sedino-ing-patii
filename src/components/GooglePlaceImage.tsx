@@ -27,7 +27,7 @@ export const GooglePlaceImage: React.FC<GooglePlaceImageProps> = ({
   showAttribution = true,
   onPlaceLoaded,
 }) => {
-  const isDirectVerifiedPhoto = fallbackUrl.includes('googleusercontent.com');
+  const isDirectVerifiedPhoto = Boolean(fallbackUrl) && !fallbackUrl.includes('unsplash.com');
   const containerRef = useRef<HTMLDivElement>(null);
   const [shouldFetch, setShouldFetch] = useState<boolean>(eager && !isDirectVerifiedPhoto);
   const [placeData, setPlaceData] = useState<GooglePlacePhotoData | null>(null);

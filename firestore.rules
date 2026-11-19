@@ -121,5 +121,121 @@ service cloud.firestore {
       allow delete: if isValidId(reviewId)
         && hasMatchingProof(reviewId, existing().editTokenHash);
     }
+
+    function isSafeMediaUrl(val, maxLen) {
+      return val is string
+        && val.size() >= 5
+        && val.size() <= maxLen
+        && (
+          val.matches('^https?://.*')
+          || val.matches('^/assets/.*')
+          || val.matches('^data:image/(jpeg|jpg|png|webp|gif);base64,[A-Za-z0-9+/=]+$')
+        );
+    }
+
+    function isValidMedia(data) {
+      return data.keys().hasAll([
+          'judul',
+          'keterangan',
+          'tipe',
+          'url',
+          'penulis',
+          'lokasi',
+          'tanggal',
+          'likes',
+          'editTokenHash',
+          'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'judul',
+          'keterangan',
+          'tipe',
+          'url',
+          'thumbnailUrl',
+          'penulis',
+          'lokasi',
+          'tanggal',
+          'likes',
+          'tags',
+          'editTokenHash',
+          'createdAt',
+          'editedAt',
+          'updatedAt'
+        ])
+        && data.judul is string && data.judul.size() >= 1 && data.judul.size() <= 120
+        && data.keterangan is string && data.keterangan.size() >= 1 && data.keterangan.size() <= 1000
+        && data.tipe in ['foto', 'video']
+        && isSafeMediaUrl(data.url, 450000)
+        && (!('thumbnailUrl' in data) || isSafeMediaUrl(data.thumbnailUrl, 250000))
+        && data.penulis is string && data.penulis.size() >= 1 && data.penulis.size() <= 80
+        && data.lokasi is string && data.lokasi.size() >= 1 && data.lokasi.size() <= 120
+        && data.tanggal is string && data.tanggal.size() >= 1 && data.tanggal.size() <= 40
+        && data.likes is int && data.likes >= 0
+        && (!('tags' in data) || (
+          data.tags is list
+          && data.tags.size() <= 10
+          && (data.tags.size() == 0 || (data.tags[0] is string && data.tags[0].size() <= 40))
+        ))
+        && data.editTokenHash is string && data.editTokenHash.size() == 64 && data.editTokenHash.matches('^[a-f0-9]{64}$')
+        && data.createdAt is timestamp
+        && (!('editedAt' in data) || (data.editedAt is string && data.editedAt.size() >= 1 && data.editedAt.size() <= 40))
+        && (!('updatedAt' in data) || data.updatedAt is timestamp);
+    }
+
+    function hasMatchingMediaProof(mediaId, expectedHash) {
+      let proofDoc = getAfter(/databases/$(database)/documents/mediaProofs/$(mediaId));
+      return proofDoc != null
+        && proofDoc.data.token is string
+        && proofDoc.data.token.size() >= 16
+        && proofDoc.data.token.size() <= 128
+        && proofDoc.data.updatedAt == request.time
+        && hashing.sha256(proofDoc.data.token.toUtf8()).toHexString().lower() == expectedHash;
+    }
+
+    match /mediaProofs/{mediaId} {
+      // Write-only collection for atomic ownership proofs; never readable by any client
+      allow read: if false;
+      allow create, update: if isValidId(mediaId) && isValidReviewProof(incoming());
+      allow delete: if false;
+    }
+
+    match /media/{mediaId} {
+      // Public visitor gallery items readable across all devices (bounded list queries up to 100)
+      allow get: if isValidId(mediaId);
+      allow list: if request.query.limit != null && request.query.limit <= 100;
+
+      // Anyone can contribute a photo/video with safe URL/data URI, initial likes 0 or 1, and server timestamp
+      allow create: if isValidId(mediaId)
+        && isValidMedia(incoming())
+        && (incoming().likes == 0 || incoming().likes == 1)
+        && incoming().createdAt == request.time
+        && !('editedAt' in incoming())
+        && !('updatedAt' in incoming());
+
+      // Two controlled update actions:
+      // 1) Any visitor incrementing likes by +1
+      // 2) Original contributor editing metadata with atomic cryptographic proof in /mediaProofs/{mediaId}
+      allow update: if isValidId(mediaId)
+        && isValidMedia(incoming())
+        && incoming().createdAt == existing().createdAt
+        && incoming().editTokenHash == existing().editTokenHash
+        && (
+          (
+            incoming().diff(existing()).affectedKeys().hasOnly(['likes'])
+            && incoming().likes == existing().likes + 1
+          )
+          || (
+            incoming().diff(existing()).affectedKeys().hasOnly(['judul', 'keterangan', 'lokasi', 'tags', 'editedAt', 'updatedAt'])
+            && incoming().likes == existing().likes
+            && incoming().updatedAt == request.time
+            && 'editedAt' in incoming()
+            && hasMatchingMediaProof(mediaId, existing().editTokenHash)
+          )
+        );
+
+      // Only the original contributor with matching atomic proof can delete their gallery item
+      allow delete: if isValidId(mediaId)
+        && hasMatchingMediaProof(mediaId, existing().editTokenHash);
+    }
   }
 }

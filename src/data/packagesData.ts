@@ -13,7 +13,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
     deskripsi: 'Rute kawasan Pegunungan Muria bagian tengah menggabungkan waduk alami, situs spiritual wali, kebudayaan toleransi, dan Nasi Gandul asli Gajahmati.',
     ruteRingkas: 'Gembong ➔ Mojosemi ➔ Gajahmati ➔ Alun-Alun Pati',
     estimasiBiaya: 'Rp 25.000 - Rp 45.000 / orang',
-    destinasiUtama: ['Waduk Seloromo', 'Makam Ki Ageng Majasemi', 'Nasi Gandul H. Gajah', 'Pendopo Kabupaten Pati'],
+    destinasiUtama: ['Waduk Seloromo', 'Makam Ki Ageng Majasemi', 'Nasi Gandul Bu Mira', 'Pendopo Kabupaten Pati'],
     stops: [
       {
         waktu: '08:00 - 10:30',
@@ -38,12 +38,12 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
       {
         waktu: '13:15 - 14:30',
         jenisWisata: 'Wisata Kuliner',
-        namaDestinasi: 'Nasi Gandul H. Gajah',
+        namaDestinasi: 'Nasi Gandul Bu Mira',
         lokasi: 'Gajahmati, Pati Kota',
         tiket: 'Rp 15k - 30k',
         aktivitas: 'Makan siang kuliner ikonik Pati berkuah santan gurih & potongan daging sapi empuk beralas daun pisang',
         travelTime: '± 10 menit',
-        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Nasi%20Gandul%20H.%20Gajah%2C%20Gajahmati%2C%20Pati%20Kota%2C%20Pati%2C%20Jawa%20Tengah'
+        mapsUrl: 'https://maps.app.goo.gl/ZuETzVi9yBNu7mdC7'
       },
       {
         waktu: '15:00 - 17:00',
@@ -64,7 +64,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
     deskripsi: 'Jelajah kawasan Pegunungan Kendeng Selatan menikmati keajaiban gua alami berstalaktit aktif, petilasan sejarah lokal, dan tradisi makan beralas daun jati.',
     ruteRingkas: 'Jimbaran Kayen ➔ Landoh Kayen ➔ Tambakromo',
     estimasiBiaya: 'Rp 20.000 - Rp 35.000 / orang',
-    destinasiUtama: ['Gua Pancur', 'Makam Syekh Jangkung (Saridin)', 'Sego Tewel Mbah Har', 'Petilasan Nyai Ageng Ngerang'],
+    destinasiUtama: ['Gua Pancur', 'Makam Syekh Jangkung (Saridin)', 'Sego Tewel Mbah Rasiah', 'Petilasan Nyai Ageng Ngerang'],
     stops: [
       {
         waktu: '08:00 - 10:30',
@@ -74,7 +74,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Rp 5.000',
         aktivitas: 'Eksplorasi gua karst, stalaktit aktif, sungai bawah tanah, & wahana bebek air',
         travelTime: 'Start Pagi',
-        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Gua%20Pancur%2C%20Jimbaran%2C%20Kayen%2C%20Pati%2C%20Jawa%20Tengah'
+        mapsUrl: 'https://maps.app.goo.gl/vKy9ymLycLuwhjHW9'
       },
       {
         waktu: '11:00 - 12:30',
@@ -84,17 +84,17 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Gratis',
         aktivitas: 'Ziarah religi & mempelajari keteladanan spiritual Syekh Jangkung',
         travelTime: '± 15 menit',
-        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Makam%20Syekh%20Jangkung%2C%20Landoh%2C%20Kayen%2C%20Pati%2C%20Jawa%20Tengah'
+        mapsUrl: 'https://maps.app.goo.gl/Tibw1KPHMPnuVbT4A'
       },
       {
         waktu: '13:00 - 14:30',
         jenisWisata: 'Wisata Kuliner',
-        namaDestinasi: 'Sego Tewel Tambakromo (Mbah Har)',
+        namaDestinasi: 'Sego Tewel Mbah Rasiah',
         lokasi: 'Tambakromo',
         tiket: 'Rp 8k - 15k',
         aktivitas: 'Makan siang gulai nangka muda kuah santan pedas beralas daun jati otentik',
         travelTime: '± 20 menit',
-        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Sego%20Tewel%20Tambakromo%2C%20Tambakromo%2C%20Pati%2C%20Jawa%20Tengah'
+        mapsUrl: 'https://maps.app.goo.gl/uW8QqUpszW64UbgWA'
       },
       {
         waktu: '15:00 - 17:00',
@@ -163,10 +163,10 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
     id: 4,
     nomor: 4,
     judul: 'Desa Pancasila Jrahi & Cita Rasa Soto Kemiri',
-    deskripsi: 'Kunjungan ke Desa Wisata Pancasila Jrahi di lereng Gunung Muria dengan air terjun alami, vihara bukit, dan Soto Kemiri khas Pati.',
-    ruteRingkas: 'Air Terjun Grenjengan ➔ Vihara Bodhi Giri ➔ Soto Pak Man ➔ Desa Jrahi',
+    deskripsi: 'Kunjungan ke Desa Wisata Pancasila Jrahi di lereng Gunung Muria dengan air terjun alami, embung berlatar pegunungan, dan Soto Kemiri khas Pati.',
+    ruteRingkas: 'Air Terjun Grenjengan ➔ Embung Jrahi ➔ Soto Pak Man ➔ Desa Jrahi',
     estimasiBiaya: 'Rp 20.000 - Rp 35.000 / orang',
-    destinasiUtama: ['Air Terjun Grenjengan Sewu', 'Vihara Bodhi Giri', 'Soto Kemiri Pak Man', 'Desa Wisata Jrahi'],
+    destinasiUtama: ['Air Terjun Grenjengan Sewu', 'Embung Jrahi', 'Soto Kemiri Pak Man', 'Desa Wisata Jrahi'],
     stops: [
       {
         waktu: '08:00 - 10:30',
@@ -176,17 +176,17 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Rp 5.000',
         aktivitas: 'Trekking hijau & menikmati keasrian air terjun alami lereng Muria',
         travelTime: 'Start Pagi',
-        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Air%20Terjun%20Grenjengan%20Sewu%2C%20Jrahi%2C%20Gunungwungkal%2C%20Pati%2C%20Jawa%20Tengah'
+        mapsUrl: 'https://maps.app.goo.gl/u29KpVkj4M5wWoQz6'
       },
       {
         waktu: '11:00 - 12:30',
-        jenisWisata: 'Wisata Religi',
-        namaDestinasi: 'Vihara Bodhi Giri',
+        jenisWisata: 'Wisata Alam',
+        namaDestinasi: 'Embung Jrahi',
         lokasi: 'Jrahi, Gunungwungkal',
-        tiket: 'Gratis',
-        aktivitas: 'Wisata spiritual & meditasi dengan panorama bukit yang menenangkan',
+        tiket: 'Rp 5.000',
+        aktivitas: 'Bersantai di dermaga kayu embung lereng Muria dengan panorama pegunungan yang sejuk',
         travelTime: '± 10 menit',
-        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Vihara%20Bodhi%20Giri%2C%20Jrahi%2C%20Gunungwungkal%2C%20Pati%2C%20Jawa%20Tengah'
+        mapsUrl: 'https://maps.app.goo.gl/G4eiXyEJTUm5yirS9'
       },
       {
         waktu: '13:30 - 14:45',
@@ -368,9 +368,9 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
     nomor: 10,
     judul: 'Sejuknya Agrowisata Jolong & Soto Kemiri Kemiri',
     deskripsi: 'Menikmati perkebunan kopi peninggalan Belanda di perbukitan Jolong, ziarah Kendeng, dan Soto Kemiri langsung di desa asalnya.',
-    ruteRingkas: 'Agrowisata Jolong ➔ Omah Kopi Heritage ➔ Soto Pak Utomo ➔ Makam Ki Ageng Ngerang',
+    ruteRingkas: 'Agrowisata Jolong ➔ Omah Kopi Heritage ➔ Soto Pak Kribo ➔ Makam Ki Ageng Ngerang',
     estimasiBiaya: 'Rp 25.000 - Rp 40.000 / orang',
-    destinasiUtama: ['Agrowisata Jolong 1', 'Omah Kopi Jolong Heritage', 'Soto Kemiri Pak Utomo', 'Makam Ki Ageng Ngerang'],
+    destinasiUtama: ['Agrowisata Jolong 1', 'Omah Kopi Jolong Heritage', 'Soto Kemiri Pak Kribo', 'Makam Ki Ageng Ngerang'],
     stops: [
       {
         waktu: '08:00 - 11:00',
@@ -380,7 +380,7 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
         tiket: 'Rp 10.000',
         aktivitas: 'Keliling kebun kopi kolonial Belanda, terapi ikan, & foto rumah pohon',
         travelTime: 'Start Pagi',
-        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Agrowisata%20Jolong%201%2C%20Sitiluhur%2C%20Gembong%2C%20Pati%2C%20Jawa%20Tengah'
+        mapsUrl: 'https://maps.app.goo.gl/RqPfytM11ZyPMZE88'
       },
       {
         waktu: '11:30 - 13:00',
@@ -395,12 +395,12 @@ export const PACKAGES_DATA: ItineraryPackage[] = [
       {
         waktu: '13:45 - 15:00',
         jenisWisata: 'Wisata Kuliner',
-        namaDestinasi: 'Soto Kemiri Pak Utomo',
+        namaDestinasi: 'Soto Kemiri Pak Kribo',
         lokasi: 'Kemiri, Pati Kota',
         tiket: 'Rp 10k - 18k',
-        aktivitas: 'Makan siang Soto Kemiri resep tertua di desa asalnya lengkap dengan uritan',
+        aktivitas: 'Makan siang Soto Kemiri kuah santan gurih khas Pati lengkap dengan uritan',
         travelTime: '± 40 menit',
-        mapsUrl: 'https://www.google.com/maps/search/?api=1&query=Soto%20Kemiri%20Pak%20Utomo%2C%20Kemiri%2C%20Pati%20Kota%2C%20Pati%2C%20Jawa%20Tengah'
+        mapsUrl: 'https://maps.app.goo.gl/xoymkRiiFH6pQt4M8'
       },
       {
         waktu: '15:30 - 17:30',
